@@ -19,3 +19,7 @@
 *.exe
 *.out
 *.app
+
+# Ignore dexy output
+.dexy/
+doc/output/
