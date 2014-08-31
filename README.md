@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/UCL/LatBo.jl.svg)](https://travis-ci.org/UCL/LatBo.jl)
 # LatBo.jl
 
 [Lattice
