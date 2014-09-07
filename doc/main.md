@@ -97,8 +97,25 @@ Bounce-back
 
 Bounce-back is an implementation of the no-slip boundary condition, meaning
 that at the wall particles have the same velocity as the wall (zero in our
-case).
+case). If there is a wall between site $\vec{r}$ and $\vec{r'} =
+\vec{r}+\vec{c}_i\Delta t$, then: (i) the wall is located half-way between
+$\vec{r}$ and $\vec{r'}$, (ii) the particles streaming from $\vec{r}$ to
+$\vec{r'}$ at time $t$ are bounced back in the opposite direction and reach
+$\vec{r}$ (again) at time $t + \Delta t$. This gives us a mean to determine the
+unknown population streaming from inside the wall:
+
+$$
+    f_j(\vec{r}, t+\Delta t) = f_i(\vec{r}, t) +
+        \frac{1}{\tau}\left[
+            f_i^{(eq)}(\vec{r}, t) - f_i(\vec{r}, t)
+        \right]
+$$
+
+where $j$ is the index of the reflected velocity: $\vec{c}_j = -\vec{c}_i$.
 
 
 Initial Conditions
 ==================
+
+Keep it simple and go for parabolic profiles. In a pipe of radius $d$ centered
+at $\vec{r}_0$, this would be $\backsim (||\vec{r}-\vec{r}_0|| - d)^2$.
