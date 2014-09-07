@@ -1,4 +1,4 @@
 using LatBo
 using FactCheck: @runtest
 
-@runtest LatBo dummy
+@runtest LatBo geometry
