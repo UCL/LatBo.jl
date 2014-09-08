@@ -1,5 +1,6 @@
 module playground
 using Base: Cartesian
+using LatBo: LatticeBoltzmann
 
 # Enumerates possible features on the grid:
 # - FLUID: Site on which to perform standard lattice-boltzmann
@@ -35,9 +36,16 @@ end
 # It should return an instance of Feature
 # If the return is equal to NOTHING, then that site is left untouched.
 # Otherwise, the site is set to that value.
+# This mechanism makes it possible to call initialize multiple times with
+# different functions.
 initialize(characterize::Function, dimensions) = initialize(
     characterize,
     zeros(Feature, dimensions)
+)
+
+initialize(characterize::Function, lb::LatticeBoltzmann) = initialize(
+    characterize,
+    lb.playground
 )
 
 end # module playground
