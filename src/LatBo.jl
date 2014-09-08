@@ -1,9 +1,8 @@
 module LatBo
 
-include("geometry.jl")
-using .geometry
-export geometry
+export geometry, playground
 
-dummy() = 5
+include("geometry.jl")
+include("playground.jl")
 
 end # module
