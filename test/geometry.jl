@@ -1,5 +1,5 @@
-using FactCheck: facts, context, @fact
-using LatBo.geometry: is_inside_pipe, is_in_half_space, is_in_sphere
+using FactCheck: facts, context, @fact, not
+using LatBo.geometry: is_in_pipe, is_in_half_space, is_in_sphere
 
 facts("Check pipe geometries") do
     N = 4  # Measure of the number of points to test
@@ -13,7 +13,7 @@ facts("Check pipe geometries") do
 
         for x in rand(N) * 4., y in radius * [rand(N)..., (1. + rand(N))...]
             r = center + x * d₀ + y * d⟂
-            @fact is_inside_pipe(r, d₀, center, radius) => (y <= radius)
+            @fact is_in_pipe(r, d₀, center, radius) => (y <= radius)
         end
     end
 
@@ -24,13 +24,16 @@ facts("Check pipe geometries") do
         d⟂¹ = Float64[-2, 1, 1]/√(4+1+1)
         center = Float64[5, 0, 0]
         radius = 3.
+        in_pipe(r) = is_in_pipe(r, d₀, center, radius)
 
-        yₛ = radius * [rand(N)..., (1. + rand(N))...]
+        yₛ = radius * [rand(N)...]
         zₛ = radius * [rand(N)..., (1. + rand(N))...]
         for x in rand(N) * 4., y in yₛ, z in zₛ
-            r = center + x * d₀ + y * d⟂⁰ + z * d⟂¹
-            inside = is_inside_pipe
-            @fact inside(r, d₀, center, radius) => (norm([z, y]) <= radius)
+            if norm([z, y]) <= radius
+                @fact center + x * d₀ + y * d⟂⁰ + z * d⟂¹ => in_pipe
+            else
+                @fact center + x * d₀ + y * d⟂⁰ + z * d⟂¹ => not(in_pipe)
+            end
         end
     end
 end

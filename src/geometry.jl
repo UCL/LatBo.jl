@@ -1,6 +1,6 @@
 module geometry
 
-export is_inside_pipe, is_in_half_space, is_in_sphere
+export is_in_pipe, is_in_half_space, is_in_sphere
 
 # Returns distance from cylinder center, squared
 # query: Vector for which to compute cylindrical norm
@@ -20,7 +20,7 @@ end
 # d₀: Direction of the cylinder
 # center: Center of cylinder goes through this point
 # radius: of the cylinder
-function is_inside_pipe{T}(query::Array{T, 1}, d₀::Array{T, 1},
+function is_in_pipe{T}(query::Array{T, 1}, d₀::Array{T, 1},
     center::Array{T, 1}, radius::T)
     cylindrical_norm_squared(query, d₀, center) <= (radius^2)
 end
@@ -45,6 +45,4 @@ function is_in_sphere{T}(query::Array{T, 1}, center::Array{T, 1}, radius::T)
     q₀⋅q₀ <= radius^2
 end
 
-
-
-end
+end # module geometry
