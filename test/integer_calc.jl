@@ -6,7 +6,7 @@ facts("Check that streaming integers are correctly calculated") do
 # Can freely edit these inputs (although i and j must not be greater than nx or ny)
 nx = 4
 ny = 3
-i = 1
+i = 4
 j = 3
 
 # These inputs must not be changed
@@ -24,7 +24,8 @@ end
 for k = 1:nVels
 	
 	# Calculate the appropriate integers for f2
-	newx, newy = LatBo.integer_calc(nx,ny,i,j,k,c)
+	newx = LatBo.integer_calc(nx,i,c[1,k])
+	newy = LatBo.integer_calc(ny,j,c[2,k])
 
 	# Assign 
 	f2[k,newx,newy] = f1[k,i,j]
