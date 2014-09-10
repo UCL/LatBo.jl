@@ -23,3 +23,5 @@
 # Ignore dexy output
 .dexy/
 doc/output/
+
+*.*~
