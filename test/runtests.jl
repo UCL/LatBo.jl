@@ -1,4 +1,4 @@
 using LatBo
 using FactCheck: @runtest
 
-@runtest LatBo geometry playground initialization
+@runtest LatBo integer_calc geometry playground initialization
