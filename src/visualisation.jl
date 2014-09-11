@@ -1,4 +1,4 @@
-module visualization
+module visualisation
 #declare use of Gadfly and DataFrames
 using Gadfly
 using DataFrames
