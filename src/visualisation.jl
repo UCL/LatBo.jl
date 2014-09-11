@@ -1,7 +1,8 @@
 module visualisation
-#declare use of Gadfly and DataFrames
+#declare use of Gadfly, DataFrames and Grid
 using Gadfly
 using DataFrames
+
 
 
 ###function to create dataframe from pipeline for plotting ###
@@ -35,5 +36,13 @@ function plot2d(playpen;xlabel="X",ylabel="Y",datalabel="Type")
 	plot(df,x="A",y="B",color="C",Geom.point,Scale.discrete_color(),Guide.xlabel(xlabel),Guide.ylabel(ylabel),Guide.colorkey(datalabel))
 
 	end
+
+end
+
+###function for contour plot of pipe###
+function plotcont(playpen)
+
+#create contour plot
+plot(z=playpen,Geom.contour)
 
 end
