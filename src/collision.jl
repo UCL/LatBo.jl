@@ -55,9 +55,6 @@ c			= Sound speed
 
 end # function collision
 
-<<<<<<< HEAD
-end # function collision
-=======
 function collision{T}(fᵢ::Array{T, 1}, kernel::Module, τ⁻¹::T)
     ρ = thermodynamics.density(fᵢ)
     collision(
@@ -70,4 +67,3 @@ function collision{T}(fᵢ::Array{T, 1}, kernel::Module, τ⁻¹::T)
         kernel.speed_of_sound
     )
 end
->>>>>>> a18f7df17118842cdc7d2810f875a229c51bf0d9
