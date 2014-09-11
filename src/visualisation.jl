@@ -26,7 +26,7 @@ end
 
 ####function for 2d plot of pipeline####
 
-function visualise_basic(playpen)
+function plot2d(playpen)
 
 	#create DataFrame
 	df = plot_frame(playpen)

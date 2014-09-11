@@ -5,7 +5,7 @@ using LatBo.visualisation: plot_frame
 using Gadfly
 using DataFrames
 
-facts("creating dataframe for use by visualisation_basic")do
+facts("creating dataframe for use by plot2D")do
 
  # Create test pipe
  
