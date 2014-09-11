@@ -24,13 +24,13 @@ function SingleRelaxationTime{T}(Δt::T, Δx::T, τ⁻¹::T,
     if spatial_dims == 2
         SingleRelaxationTime{T, 2}(
             Δt::T, Δx::T, τ⁻¹::T, kernel,
-            zeros(T, tuple(dimensions..., neighbors)),
+            zeros(T, tuple(neighbors, dimensions...)),
             zeros(playground.Feature, dimensions)
         )
     else
         SingleRelaxationTime{T, 3}(
             Δt::T, Δx::T, τ⁻¹::T, kernel,
-            zeros(T, tuple(dimensions..., neighbors)),
+            zeros(T, tuple(neighbors, dimensions...)),
             zeros(playground.Feature, dimensions)
         )
     end
