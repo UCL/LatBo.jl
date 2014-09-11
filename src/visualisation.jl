@@ -26,13 +26,13 @@ end
 
 ####function for 2d plot of pipeline####
 
-function plot2d(playpen)
+function plot2d(playpen;labels...)
 
 	#create DataFrame
 	df = plot_frame(playpen)
 
 	#create simple 2D plot using discrete colours
-	plot(df,x="A",y="B",color="C",Geom.point,Scale.discrete_color())
+	plot(df,x="A",y="B",color="C",Geom.point,Scale.discrete_color(),Guide.xlabel("X"),Guide.ylabel("Y"))
 
 	end
 
