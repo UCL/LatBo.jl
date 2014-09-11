@@ -10,5 +10,6 @@ include("single_relaxation_time.jl")
 include("collision.jl")
 include("integer_calc.jl")
 include("kernel.jl")
+include("zou_he_boundary.jl")
 
 end # module
