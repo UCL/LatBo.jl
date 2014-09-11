@@ -5,7 +5,7 @@ using LatBo: plot_frame
 using Gadfly
 using DataFrames
 
-facts("creating frame elements")do
+facts("creating dataframe for use by visualisation_basic")do
 
  # Create test pipe
  
@@ -19,7 +19,7 @@ facts("creating frame elements")do
     ncols = size(testframe, 2)
     
 #test frame elements
-@fact nrows => 41
+@fact nrows => 1600
 @fact ncols => 3
 
 end
