@@ -9,3 +9,4 @@ using FactCheck: @runtest
 @runtest LatBo thermodynamics
 @runtest LatBo lattice_loop
 @runtest LatBo plot_frame
+@runtest LatBo zou_he_boundary
