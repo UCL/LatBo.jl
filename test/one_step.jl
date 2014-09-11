@@ -1,6 +1,6 @@
 using FactCheck: facts, @fact, roughly, @fact_throws, context, not
 using LatBo: SingleRelaxationTime, run_lb
-using LatBo.playground: FLUID, INLET
+using LatBo.playground: FLUID, INLET, SOLID
 
 facts("Goes one step through main loop") do
     sim = SingleRelaxationTime(1., (6, 6))
@@ -47,6 +47,17 @@ facts("Goes one step through main loop") do
             @fact sim.populations[:, i, 1] => not(roughly(fᵢ⁰))
         end
     end
+	
+	context("south no slip boundary, no inlet") do
+        sim.playground[:] = FLUID
+        sim.playground[end, :] = SOLID
+        sim.populations[:] = 0
+        sim.populations[5, :, end-1] = 1 # Downward velocity for particles next to wall
 
+        # Run one step
+        run_lb(sim)
+        @fact sim.populations[3, :, end] => roughly(1)
+    end
+	
 end
 

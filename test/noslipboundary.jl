@@ -19,7 +19,7 @@ facts("No Slip Boundary Checks") do
 		c = D2Q9.celerities # Celerities Vector
 		b_indices = [1 2 3 4 4 4 3 2 1 1;
 					1 1 1 1 2 3 3 3 3 2] # Define boundary node indices as column vectors
-		mid = 0
+		mid = false
 		sol = transpose(Float64[0 0 0 0 0 8 0 8 0;
 							0 0 5 0 5 17 0 17 0;
 							0 0 14 0 14 0 9 0 9;
