@@ -9,7 +9,7 @@ abstract LatticeBoltzmann
 include("geometry.jl")
 include("playground.jl")
 include("single_relaxation_time.jl")
-include("plot_frame.jl")
+#include("plot_frame.jl")
 include("thermodynamics.jl")
 include("collision.jl")
 include("integer_calc.jl")
@@ -19,12 +19,14 @@ include("initial_probability.jl")
 include("noslip_boundary.jl")
 #include("visualisation.jl")
 
+
 # Runs lattice boltzmann for n steps
 function run_lb(observer::Function, sim::LatticeBoltzmann, nsteps::Int)
     for n in nsteps
         run_lb(observer, sim)
     end
 end
+
 # Runs lattice boltzmann for single step
 function run_lb(observer::Function, sim::LatticeBoltzmann)
     # Aliases for easier acces to quantities
@@ -37,7 +39,7 @@ function run_lb(observer::Function, sim::LatticeBoltzmann)
     # Loop over each lattice site
     lattice_loop(sim) do indices, fᵢ, feature
         # Apply collision step
-        this_pop[:, indices...] += collision(fᵢ, kernel, sim.τ⁻¹)
+		this_pop[:, indices...] += collision(fᵢ, kernel, sim.τ⁻¹)
         # Apply streaming step
         for v = 1:size(celerities, 2)
             streamed = integer_calc(gridsize, indices, celerities[:, v])
@@ -50,8 +52,8 @@ function run_lb(observer::Function, sim::LatticeBoltzmann)
         if feature == playground.INLET
             next_pop[:, indices...] = zou_he_boundary(
                 indices..., gridsize..., fᵢ, sim.inlet_velocity)
-        else feature == playground.SOLID
-            noslip_boundary(sim.playground,indices,fᵢ)
+        elseif feature == playground.SOLID
+            noslip_boundary(sim.playground,indices,next_pop)
         end
     end
 
@@ -62,6 +64,7 @@ function run_lb(observer::Function, sim::LatticeBoltzmann)
     # run observer at each step
     observer()
 end
+
 # Run simulation for N numbers of steps
 run_lb(sim::LatticeBoltzmann, nsteps::Int) = (
     run_lb(()->nothing, sim, nsteps)

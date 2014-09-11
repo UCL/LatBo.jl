@@ -17,7 +17,7 @@ m_opp = Int32[0 3 4 1 2 7 8 5 6] # Opposite directions
 for m = 2:size(directions,2) # Only consider the neighbours
 
 	direction = directions[:,m] # Consider each direction
-
+	
 	if any( (index + direction) .> lattice_size)
 		# Outside the lattice
 		# println("Outside +Boundary")
@@ -27,6 +27,7 @@ for m = 2:size(directions,2) # Only consider the neighbours
 		# println("Outside -Boundary")
 	
 	elseif grid[(index + direction)...] == FLUID
+	
 		if mid
 			f[m,(index)...] = f[m_opp[m]+1,(index+direction)...]
 		else

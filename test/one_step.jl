@@ -48,16 +48,28 @@ facts("Goes one step through main loop") do
         end
     end
 	
-	context("south no slip boundary, no inlet") do
-        sim.playground[:] = FLUID
-        sim.playground[end, :] = SOLID
-        sim.populations[:] = 0
-        sim.populations[5, :, end-1] = 1 # Downward velocity for particles next to wall
-
-        # Run one step
+	context("south no slip boundary, no inlet 1") do
+		sim.playground[:] = FLUID
+		sim.playground[:, 1] = SOLID
+		sim.populations[1, :, :] = 1
+		sim.populations[1, :, 2] = 0
+		sim.populations[5, :, 2] = 1 # Downward velocity for particles next to wall
+		
+		# Run one step
         run_lb(sim)
-        @fact sim.populations[3, :, end] => roughly(1)
+		
+		fᵢ⁰ = sim.populations[:, 3, 4]
+        for i=1:size(sim.populations, 2), j=4:size(sim.populations, 3)
+            @fact sim.populations[:, i, j] => roughly(fᵢ⁰)
+        end
+		
+		fᵢ⁰ = sim.populations[:, 1, 2]
+        for i=1:size(sim.populations, 2), j=2
+            @fact sim.populations[:, i, j] => roughly(fᵢ⁰)
+        end
+				
     end
+
 	
 end
 

@@ -56,7 +56,7 @@ facts("No Slip Boundary Checks") do
 			noslip_boundary(grid,index,f)
 			
 			# Check the velocities match the solution
-			println("Check boundary point ", b)
+			# println("Check boundary point ", b)
 			@fact f[:,(index)...] => sol[:,b]
 			
 		end
