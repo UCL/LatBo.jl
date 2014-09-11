@@ -2,8 +2,10 @@ using Base: Cartesian
 
 type SingleRelaxationTime{T <: FloatingPoint, DIMS} <: LatticeBoltzmann
     τ⁻¹::Float64  # Inverse of the relaxation time
+    kernel::Module
 
     populations :: Array
+    next_populations :: Array
     playground :: Array
 end
 
@@ -14,12 +16,16 @@ function SingleRelaxationTime{T}(τ⁻¹::T, dimensions::(Int...))
     if length(dimensions) == 2
         SingleRelaxationTime{T, 2}(
             τ⁻¹::T,
+            D2Q9,
+            zeros(T, tuple(9, dimensions...)),
             zeros(T, tuple(9, dimensions...)),
             zeros(playground.Feature, dimensions)
         )
     else
         SingleRelaxationTime{T, 3}(
             τ⁻¹::T,
+            D3Q19,
+            zeros(T, tuple(19, dimensions...)),
             zeros(T, tuple(19, dimensions...)),
             zeros(playground.Feature, dimensions)
         )

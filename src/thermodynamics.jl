@@ -4,7 +4,7 @@ module thermodynamics
 density{T}(fᵢ::Array{T, 1}) = sum(fᵢ)
 # Velocities at a given lattice site
 velocity{T}(fᵢ::Array{T, 1}, cᵢ::Array{T, 2}, ρ::T) = (
-    sum(fᵢ .* transpose(cᵢ), 1) / ρ
+    vec(sum(cᵢ .* transpose(fᵢ), 2) / ρ)
 )
 velocity{T}(fᵢ::Array{T, 1}, cᵢ::Array{T, 2}) = velocity(fᵢ, cᵢ, density(fᵢ))
 # deviatoric tensor at given point

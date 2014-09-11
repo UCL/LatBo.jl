@@ -14,14 +14,14 @@ rho * weight_i * [ 1 + A_i + B_i - C]
 =#
 
 # Declare empty feq array with length based on number of velocities found from length of weights
-feq = zeros(Float64,1,size(weights,2))
+    println("??? 0")
+    feq = zeros(Float64, length(weights))
 
 	# Calculate C
 	C = dot(u,u) / (2*c^2)
 
 	# Get number of velocities from size of weights and loop through
-	for i = 1:size(weights,2)
-		
+	for i = 1:length(weights)
 		# Calculate A
 		A = dot(e[:,i],u) / c^2
 		
@@ -30,7 +30,6 @@ feq = zeros(Float64,1,size(weights,2))
 		
 		# Calculate feq_i
 		feq[i] = rho * weights[i] * (1 + A + B - C)
-		
 	end
 	
 	return feq
@@ -52,6 +51,20 @@ c			= Sound speed
 
 =#
 
-τ⁻¹ * (equilibrium(u,e,weights,rho,c) - f)
+    feq = equilibrium(u,e,weights,rho,c)
+    τ⁻¹ * (feq - f)
 
 end # function collision
+
+function collision{T}(fᵢ::Array{T, 1}, kernel::Module, τ⁻¹::T)
+    ρ = thermodynamics.density(fᵢ)
+    collision(
+        thermodynamics.velocity(fᵢ, kernel.celerities, ρ),
+        fᵢ,
+        kernel.celerities,
+        kernel.weights,
+        ρ,
+        τ⁻¹,
+        kernel.speed_of_sound
+    )
+end
