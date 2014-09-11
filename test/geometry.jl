@@ -26,9 +26,9 @@ facts("Check pipe geometries") do
         radius = 3.
         in_pipe(r) = is_in_pipe(r, d₀, center, radius)
 
-        yₛ = radius * [rand(N)...]
-        zₛ = radius * [rand(N)..., (1. + rand(N))...]
-        for x in rand(N) * 4., y in yₛ, z in zₛ
+        ys = radius * [rand(N)...]
+        zs = radius * [rand(N)..., (1. + rand(N))...]
+        for x in rand(N) * 4., y in ys, z in zs
             if norm([z, y]) <= radius
                 @fact center + x * d₀ + y * d⟂⁰ + z * d⟂¹ => in_pipe
             else
@@ -47,10 +47,10 @@ facts("Check half-plane geometries") do
         d⟂¹ = Float64[-2, 1, 1]/√(4+1+1)
         Ω₀ = Float64[4, 3, 1]
 
-        xₛ = 4.0*[rand(N)..., -rand(N)...]
-        yₛ = 4.0(rand(N) - 0.5)
-        zₛ = 4.0(rand(N) - 0.5)
-        for x in xₛ, y in yₛ, z in zₛ
+        xs = 4.0*[rand(N)..., -rand(N)...]
+        ys = 4.0(rand(N) - 0.5)
+        zs = 4.0(rand(N) - 0.5)
+        for x in xs, y in ys, z in zs
             r = Ω₀ + x * d₀ + y * d⟂⁰ + z * d⟂¹
             inside = is_in_half_space
             @fact inside(r, d₀, Ω₀) => (x >= 0)
@@ -65,10 +65,10 @@ facts("Check sphere geometries") do
         Ω₀ = Float64[4, 3, 1]
         radius = 3.
 
-        xₛ = 0.5radius*[rand(N)..., 1. + rand(N)...]
-        yₛ = 0.5radius*[rand(N)..., 1. + rand(N)...]
-        zₛ = 0.5radius*[rand(N)..., 1. + rand(N)...]
-        for x in xₛ, y in yₛ, z in zₛ
+        xs = 0.5radius*[rand(N)..., 1. + rand(N)...]
+        ys = 0.5radius*[rand(N)..., 1. + rand(N)...]
+        zs = 0.5radius*[rand(N)..., 1. + rand(N)...]
+        for x in xs, y in ys, z in zs
             r = [x, y, z] + Ω₀
             inside = is_in_sphere
             @fact inside(r, Ω₀, radius) => (norm([x, y, z]) <= radius)
