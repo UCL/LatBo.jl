@@ -1,10 +1,10 @@
-####function for 2d plot of pipeline####
-function visualise_basic(playpen)
-
 #declare use of Gadfly and DataFrames
 using Gadfly
 using DataFrames
 using LatBo: plot_frame
+
+####function for 2d plot of pipeline####
+function visualise_basic(playpen)
 
 #create DataFrame
 df = plot_frame(play_pen)

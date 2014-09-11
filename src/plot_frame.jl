@@ -1,10 +1,10 @@
 ###function to create dataframe from pipeline for plotting ###
-
-function plot_frame(playpen)
-
 #declare use of Gadfly and DataFrames
 using Gadfly
 using DataFrames
+
+function plot_frame(playpen)
+
 
 #create empty 1D arrays 
 x,y,z=Int8[],Int8[],Int8[]
