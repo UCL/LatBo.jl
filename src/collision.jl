@@ -14,7 +14,6 @@ rho * weight_i * [ 1 + A_i + B_i - C]
 =#
 
 # Declare empty feq array with length based on number of velocities found from length of weights
-    println("??? 0")
     feq = zeros(Float64, length(weights))
 
 	# Calculate C

@@ -11,10 +11,8 @@ facts("Single relaxation time initialization") do
             @fact fᵢ => roughly(sim.populations[:, indices...])
             @fact feature => roughly(sim.playground[indices...])
             populations[:, indices...] = 0
-            ones(size(fᵢ))
         end
         @fact populations => roughly(zeros(size(populations)...))
-        @fact sim.populations => roughly(ones(size(populations)...))
     end
     context("3D") do
         sim = SingleRelaxationTime(0.5, (3, 3, 3))
@@ -25,9 +23,7 @@ facts("Single relaxation time initialization") do
             @fact fᵢ => roughly(sim.populations[:, indices...])
             @fact feature => roughly(sim.playground[indices...])
             populations[:, indices...] = 0
-            ones(size(fᵢ))
         end
         @fact populations => roughly(zeros(size(populations)...))
-        @fact sim.populations => roughly(ones(size(populations)...))
     end
 end

@@ -4,6 +4,7 @@ type SingleRelaxationTime{T <: FloatingPoint, DIMS} <: LatticeBoltzmann
     τ⁻¹::Float64  # Inverse of the relaxation time
     kernel::Module
 
+    inlet_velocity::Array
     populations :: Array
     next_populations :: Array
     playground :: Array
@@ -17,6 +18,7 @@ function SingleRelaxationTime{T}(τ⁻¹::T, dimensions::(Int...))
         SingleRelaxationTime{T, 2}(
             τ⁻¹::T,
             D2Q9,
+            zeros(T, 2),
             zeros(T, tuple(9, dimensions...)),
             zeros(T, tuple(9, dimensions...)),
             zeros(playground.Feature, dimensions)
@@ -25,6 +27,7 @@ function SingleRelaxationTime{T}(τ⁻¹::T, dimensions::(Int...))
         SingleRelaxationTime{T, 3}(
             τ⁻¹::T,
             D3Q19,
+            zeros(T, 2),
             zeros(T, tuple(19, dimensions...)),
             zeros(T, tuple(19, dimensions...)),
             zeros(playground.Feature, dimensions)
@@ -39,7 +42,7 @@ for N = 2:3
             playground = sim.playground
             Cartesian.@nloops $N i d->1:size(playground, d) begin
                 indices = [(Cartesian.@ntuple $N i)...]
-                sim.populations[:, indices...] = site_func(
+                site_func(
                     indices, sim.populations[:, indices...],
                     Cartesian.@nref $N playground i
                 )
