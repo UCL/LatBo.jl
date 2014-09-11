@@ -13,3 +13,4 @@ using FactCheck: @runtest
 @runtest LatBo initial_probability
 @runtest LatBo noslipboundary
 @runtest LatBo one_step
+@runtest LatBo plot_vectors
