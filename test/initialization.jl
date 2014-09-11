@@ -12,8 +12,8 @@ facts("Single relaxation time initialization") do
     @fact data.kernel => :D3Q15
 
     @fact eltype(data.populations) => Float64
-    @fact size(data.populations) => (20, 20, 20, 15)
-    @fact data.populations => roughly(zeros(20, 20, 20, 15))
+    @fact size(data.populations) => (15, 20, 20, 20)
+    @fact data.populations => roughly(zeros(15, 20, 20, 20))
 
     @fact eltype(data.playground) => Feature
     @fact size(data.playground) => (20, 20, 20)
