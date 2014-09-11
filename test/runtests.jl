@@ -1,4 +1,10 @@
 using LatBo
 using FactCheck: @runtest
 
-@runtest LatBo geometry playground initialization collision integer_calc thermodynamics
+@runtest LatBo geometry
+@runtest LatBo playground
+@runtest LatBo initialization
+@runtest LatBo collision
+@runtest LatBo integer_calc
+@runtest LatBo thermodynamics
+@runtest LatBo lattice_loop
