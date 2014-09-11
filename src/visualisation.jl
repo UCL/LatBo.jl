@@ -4,6 +4,7 @@ using Gadfly
 using DataFrames
 using PyCall
 using PyPlot
+#using Axes3D
 
 
 
@@ -62,11 +63,22 @@ end
 function plot3dscat(playpen)
 
 	#create datavectors
+	x,y,z= plot_vectors(playpen)
+	
+	#create 3d scatter plot
+	scatter3D(x,y,z;)
+
+end
+
+###function for trisurface plot pipe###
+function plottrisurf(playpen)
+
+	#create datavectors
 	#create DataFrame
 	x,y,z= plot_vectors(playpen)
 
-	#create 3d scatter plot
-	Axes3D.scatter(x,y,z)
+	#create tri_surface plot
+	plot_trisurf(x,y,z)
 
 end
 
