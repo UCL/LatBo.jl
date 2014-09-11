@@ -42,7 +42,7 @@ end
 function plotcont(playpen)
 
 #create contour plot
-	plot(z=playpen,Geom.contour)
+	plot(z=playpen,Geom.contour(levels=4))
 
 end
 
