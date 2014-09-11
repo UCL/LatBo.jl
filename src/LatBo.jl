@@ -1,7 +1,8 @@
 module LatBo
 
 export geometry, playground, LatticeBoltzmann, SingleRelaxationTime, D2Q9,
-    D3Q19, thermodynamics, collision, lattice_loop, visualisation
+    D3Q19, thermodynamics, collision, lattice_loop, visualisation, integer_calc,
+	noslip_boundary
 
 abstract LatticeBoltzmann
 
@@ -15,5 +16,6 @@ include("integer_calc.jl")
 include("kernel.jl")
 include("zou_he_boundary.jl")
 include("thermodynamics.jl")
+include("noslip_boundary.jl")
 
 end # module

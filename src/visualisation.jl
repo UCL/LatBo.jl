@@ -2,6 +2,9 @@ module visualisation
 #declare use of Gadfly, DataFrames and Grid
 using Gadfly
 using DataFrames
+using PyCall
+using PyPlot
+#using Axes3D
 
 
 
@@ -25,6 +28,24 @@ function plot_frame(playpen)
 
 end
 
+###function to create datavectors from pipeline for plotting ###
+
+function plot_vectors(playpen)
+
+	#create empty 1D arrays 
+	x,y,z=Int8[],Int8[],Int8[]
+
+	#create 1D vectors from 2D array playpen
+	for i=1:size(playpen,1),j=1:size(playpen,2)
+    	push!(x,i)
+    	push!(y,j)
+    	push!(z,playpen[i,j])
+	end
+
+	return x,y,z
+
+end
+
 ####function for 2d plot of pipeline####
 
 function plot2d(playpen;xlabel="X",ylabel="Y",datalabel="Type")
@@ -38,11 +59,26 @@ function plot2d(playpen;xlabel="X",ylabel="Y",datalabel="Type")
 end
 
 
-###function for contour plot of pipe###
-function plotcont(playpen)
+###function for 3d scatter of plot pipe###
+function plot3dscat(playpen)
 
-#create contour plot
-	plot(z=playpen,Geom.contour(levels=4))
+	#create datavectors
+	x,y,z= plot_vectors(playpen)
+	
+	#create 3d scatter plot
+	scatter3D(x,y,z;)
+
+end
+
+###function for trisurface plot pipe###
+function plottrisurf(playpen)
+
+	#create datavectors
+	#create DataFrame
+	x,y,z= plot_vectors(playpen)
+
+	#create tri_surface plot
+	plot_trisurf(x,y,z)
 
 end
 
