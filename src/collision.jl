@@ -9,7 +9,7 @@ c			= Sound speed
 
 Equilibrium probability function for i-th direction feq_i of the form:
 
-rho * weight_i * [ 1 + A_i + B_i - C]
+weight_i * [rho + A_i + B_i - C]
 
 =#
 
@@ -29,7 +29,7 @@ feq = zeros(Float64,1,size(weights,2))
 		B = (dot(e[:,i],u))^2 / (2*c^4)
 		
 		# Calculate feq_i
-		feq[i] = rho * weights[i] * (1 + A + B - C)
+		feq[i] = weights[i] * (rho + A + B - C)
 		
 	end
 	

@@ -15,5 +15,6 @@ include("integer_calc.jl")
 include("kernel.jl")
 include("zou_he_boundary.jl")
 include("thermodynamics.jl")
+include("initial_probability.jl")
 
 end # module
