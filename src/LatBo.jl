@@ -2,7 +2,7 @@ module LatBo
 
 export geometry, playground, LatticeBoltzmann,
     SingleRelaxationTime, D2Q9, D3Q19, thermodynamics, collision,
-	noslip_boundary
+	noslip_boundary, integer_calc
 
 abstract LatticeBoltzmann
 
