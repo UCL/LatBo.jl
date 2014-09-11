@@ -19,7 +19,7 @@ facts("creating frame elements")do
     ncols = size(df, 2)
     
 #test frame elements
-@facts nrows => 40
-@facts ncols => 3
+@fact nrows => 40
+@fact ncols => 3
 
 end
