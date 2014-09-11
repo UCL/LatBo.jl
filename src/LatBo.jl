@@ -50,7 +50,7 @@ function run_lb(observer::Function, sim::LatticeBoltzmann)
             next_pop[:, indices...] = zou_he_boundary(
                 indices..., gridsize..., fᵢ, sim.inlet_velocity)
         else feature == playground.SOLID
-            nothing
+            noslip_boundary(sim.playground,indices,fᵢ)
         end
     end
 
