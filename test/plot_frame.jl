@@ -1,7 +1,7 @@
 using FactCheck: facts, context, @fact, not
 #using LatBo.geometry: is_in_pipe, is_in_half_space
 #using LatBo.playground: initialize, SOLID, FLUID, INLET, OUTLET, NOTHING
-using LatBo.visualization: plot_frame
+using LatBo.visualisation: plot_frame
 using Gadfly
 using DataFrames
 
