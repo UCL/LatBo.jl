@@ -1,8 +1,8 @@
 module D2Q9
-    const celerities = transpose(Float64[
+    const celerities = transpose(Int32[
         0 0;
         1 0; 0 1; -1 0; 0 -1;
-        1 1; 1 -1; -1 1; -1 -1
+        1 1; -1 1; -1 -1; 1 -1
     ])
     const weights = vcat(4./9., [1./9. for i=1:4], [1./36. for i=1:4])
     const speed_of_sound = (
@@ -11,7 +11,7 @@ module D2Q9
 end
 
 module D3Q19
-    const celerities = transpose(Float64[
+    const celerities = transpose(Int32[
         0 0 0;
         1 0 0; 0 1 0; 0 0 1; -1 0 0; 0 -1 0; 0 0 -1;
         1 1 0; 1 0 1; -1 1 0; -1 0 1; -1 -1 0; -1 0 -1; 1 -1 0; 1 0 -1;
