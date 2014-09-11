@@ -1,6 +1,7 @@
 using FactCheck: facts, context, @fact, not
 #using LatBo.geometry: is_in_pipe, is_in_half_space
 #using LatBo.playground: initialize, SOLID, FLUID, INLET, OUTLET, NOTHING
+using LatBo: plot_frame
 using Gadfly
 using DataFrames
 
@@ -11,7 +12,14 @@ facts("creating frame elements")do
  testpipe = ones(40,40)
  
  #call to function for testing, return DataFrame
- testframe=visualisation_basic(testpipe)
+ testframe=plot_frame(testpipe)
         
-#Test dimensions of frame elements
+#obtain dimensions of frame elements
+    nrows = size(df, 1)
+    ncols = size(df, 2)
     
+#test frame elements
+@facts nrows => 40
+@facts ncols => 3
+
+end
