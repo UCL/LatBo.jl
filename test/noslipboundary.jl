@@ -19,7 +19,7 @@ facts("No Slip Boundary Checks") do
 		c = D2Q9.celerities # Celerities Vector
 		b_indices = [1 2 3 4 4 4 3 2 1 1;
 					1 1 1 1 2 3 3 3 3 2] # Define boundary node indices as column vectors
-		mid = false
+
 		sol = transpose(Float64[0 0 0 0 0 8 0 8 0;
 							0 0 5 0 5 17 0 17 0;
 							0 0 14 0 14 0 9 0 9;
@@ -53,7 +53,7 @@ facts("No Slip Boundary Checks") do
 		# For each boundary node apply boundary condition		
 		for b = 1:size(b_indices,2)
 			index = b_indices[:,b]
-			noslip_boundary(grid,index,f,mid)
+			noslip_boundary(grid,index,f)
 			
 			# Check the velocities match the solution
 			println("Check boundary point ", b)
