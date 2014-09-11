@@ -19,7 +19,7 @@ facts("creating frame elements")do
     ncols = size(testframe, 2)
     
 #test frame elements
-@fact nrows => 40
+@fact nrows => 41
 @fact ncols => 3
 
 end
