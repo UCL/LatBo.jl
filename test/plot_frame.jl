@@ -15,8 +15,8 @@ facts("creating frame elements")do
  testframe=plot_frame(testpipe)
         
 #obtain dimensions of frame elements
-    nrows = size(df, 1)
-    ncols = size(df, 2)
+    nrows = size(testframe, 1)
+    ncols = size(testframe, 2)
     
 #test frame elements
 @fact nrows => 40
