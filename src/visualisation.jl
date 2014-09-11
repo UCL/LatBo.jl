@@ -18,9 +18,8 @@ function plot_frame(playpen)
     	push!(z,playpen[i,j])
 	end
 
-	#create DataFrame
+	#create DataFrame and return
 	df = DataFrame(A = x[:], B = y[:],C=z[:])
-
 	return df
 
 end
@@ -30,7 +29,7 @@ end
 function visualise_basic(playpen)
 
 	#create DataFrame
-	df = plot_frame(play_pen)
+	df = plot_frame(playpen)
 
 	#create simple 2D plot using discrete colours
 	plot(df,x="A",y="B",color="C",Geom.point,Scale.discrete_color())
