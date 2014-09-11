@@ -8,3 +8,4 @@ using FactCheck: @runtest
 @runtest LatBo integer_calc
 @runtest LatBo thermodynamics
 @runtest LatBo lattice_loop
+@runtest LatBo plot_frame
