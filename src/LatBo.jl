@@ -21,7 +21,7 @@ include("noslip_boundary.jl")
 
 # Runs lattice boltzmann for n steps
 function run_lb(observer::Function, sim::LatticeBoltzmann, nsteps::Int)
-    for n in nsteps
+    for n = 1:nsteps
         run_lb(observer, sim)
     end
 end
@@ -50,8 +50,8 @@ function run_lb(observer::Function, sim::LatticeBoltzmann)
         if feature == playground.INLET
             next_pop[:, indices...] = zou_he_boundary(
                 indices..., gridsize..., fᵢ, sim.inlet_velocity)
-        else feature == playground.SOLID
-            noslip_boundary(sim.playground,indices,fᵢ)
+        elseif feature == playground.SOLID
+            #= noslip_boundary(sim.playground,indices,fᵢ) =#
         end
     end
 

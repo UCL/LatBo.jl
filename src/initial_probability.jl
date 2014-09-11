@@ -7,7 +7,7 @@ using LatBo.D2Q9
 
 function initial_probability(playground_var,initial_vel,initial_rho,e,weights,c) 
 
-	if playground_var == 2
+	if playground_var == playground.SOLID
 		return equilibrium([0.0; 0.0],e,weights,initial_rho,c)
 	else
 		return equilibrium(initial_vel,e,weights,initial_rho,c)

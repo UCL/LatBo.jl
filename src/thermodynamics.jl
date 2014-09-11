@@ -3,7 +3,7 @@ module thermodynamics
 # Density at a given lattice site
 density(fᵢ) = sum(fᵢ)
 # Velocities at a given lattice site
-velocity(fᵢ, cᵢ, ρ) = vec(sum(cᵢ .* transpose(fᵢ), 2) / ρ)
+velocity(fᵢ, cᵢ, ρ) = vec(sum(cᵢ .* transpose(fᵢ), 2))# / ρ)
 velocity(fᵢ, cᵢ) = velocity(fᵢ, cᵢ, density(fᵢ))
 # deviatoric tensor at given point
 function deviatoric(fᵢ, fᵢ⁼, cᵢ, τ⁻¹)

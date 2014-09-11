@@ -17,8 +17,7 @@ const OUTLET  = convert(Feature, 4)
 
 for N = 2:3
     @eval begin
-        function initialize(characterize::Function,
-            grid::Array{Feature, $N})
+        function initialize(characterize::Function, grid::Array{Feature, $N})
             Cartesian.@nloops $N i grid begin
                 site::Feature = characterize((Cartesian.@ntuple $N i)...)
                 if site != NOTHING

@@ -39,7 +39,7 @@ facts("Goes one step through main loop") do
 
         # Run one step
         run_lb(sim)
-        fᵢ⁰ = sim.populations[:, 1, 2] 
+        fᵢ⁰ = sim.populations[:, 1, 2]
         for i=1:size(sim.populations, 2), j=2:size(sim.populations, 2)
             @fact sim.populations[:, i, j] => roughly(fᵢ⁰)
         end

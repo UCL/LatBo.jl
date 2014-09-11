@@ -11,6 +11,6 @@ using FactCheck: @runtest
 @runtest LatBo zou_he_boundary
 @runtest LatBo initial_probability
 @runtest LatBo noslipboundary
-#= @runtest LatBo one_step =#
+@runtest LatBo one_step
 #= @runtest LatBo plot_frame =#
 #= @runtest LatBo plot_vectors =#

@@ -5,9 +5,7 @@ module D2Q9
         1 1; -1 1; -1 -1; 1 -1
     ])
     const weights = vcat(4./9., [1./9. for i=1:4], [1./36. for i=1:4])
-    const speed_of_sound = (
-        sum([weights[i] * vecnorm(celerities) for i=1:length(weights)])
-    )
+    const speed_of_sound = 1./sqrt(3.)
 end
 
 module D3Q19
