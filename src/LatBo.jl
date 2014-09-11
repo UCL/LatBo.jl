@@ -7,5 +7,7 @@ abstract LatticeBoltzmann
 include("geometry.jl")
 include("playground.jl")
 include("single_relaxation_time.jl")
+include("plot_frame.jl")
+include("basic_visualisation.jl")
 
 end # module
