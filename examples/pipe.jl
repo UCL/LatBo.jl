@@ -46,5 +46,5 @@ npoints = size(sim.playground, 1)
 plot(
     x=repeat([1:npoints...], inner=[npoints]),
     y=repeat([1:npoints...], outer=[npoints]),
-    color=alls[1]
+    color=alls[end]
 )

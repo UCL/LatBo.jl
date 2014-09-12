@@ -2,7 +2,7 @@ module LatBo
 
 export geometry, playground, LatticeBoltzmann, SingleRelaxationTime, D2Q9,
     D3Q19, thermodynamics, collision, lattice_loop, integer_calc,
-	noslip_boundary, run_lb#, visualisation
+	noslip_boundary, run_lb, open_outlet#, visualisation
 
 abstract LatticeBoltzmann
 
@@ -17,6 +17,7 @@ include("kernel.jl")
 include("zou_he_boundary.jl")
 include("initial_probability.jl")
 include("noslip_boundary.jl")
+include("open_outlet.jl")
 #include("visualisation.jl")
 
 
@@ -54,6 +55,9 @@ function run_lb(observer::Function, sim::LatticeBoltzmann)
                 indices..., gridsize..., fᵢ, sim.inlet_velocity)
         elseif feature == playground.SOLID
             noslip_boundary(sim.playground,indices,next_pop)
+	elseif feature == playground.OUTLET
+		next_pop[:, indices...] = open_outlet(
+		indices, gridsize, next_pop)
         end
     end
 
