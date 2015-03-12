@@ -3,6 +3,7 @@ using LatBo
 using FactCheck
 
 include("thermodynamics.jl")
+include("kernel.jl")
 FactCheck.exitstatus()
 #= @runtest LatBo geometry =#
 #= @runtest LatBo playground =#

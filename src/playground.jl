@@ -1,6 +1,5 @@
 module playground
 using Base: Cartesian
-using LatBo: LatticeBoltzmann
 
 # Enumerates possible features on the grid:
 # - FLUID: Site on which to perform standard lattice-boltzmann
@@ -42,9 +41,4 @@ initialize(characterize::Function, dimensions) = initialize(
     zeros(Feature, dimensions)
 )
 
-initialize(characterize::Function, lb::LatticeBoltzmann) = initialize(
-    characterize,
-    lb.playground
-)
-
-end # module playground
+end
