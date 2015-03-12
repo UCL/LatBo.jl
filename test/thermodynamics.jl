@@ -1,52 +1,46 @@
 using FactCheck: facts, @fact, roughly
-using LatBo: thermodynamics, D2Q9
+using LatBo: thermodynamics, D2Q9, D3Q19
+using LatBo.thermodynamics: equilibrium
 
-facts("Verify thermodynamic quantities") do
-    context("rho") do
-        fᵢ = Float64[1:9...]
-        @fact thermodynamics.density(fᵢ) => roughly(10*9/2)
-        fᵢ = Float64[1:10...]
-        @fact thermodynamics.density(fᵢ) => roughly(10*11/2)
-    end
+for lattice_name in [:D2Q9, :D3Q19]
+    facts("Verify thermodynamic quantities for $(lattice_name)") do
+        lattice = eval(lattice_name)
+        ncomponents = size(lattice.celerities, 2)
 
-    context("velocity") do
-        fᵢ = ones(Float64, 9)
-        @fact thermodynamics.velocity(fᵢ, D2Q9.celerities, 1.) .== 0 => all
-        fᵢ[1] = 1
-        @fact thermodynamics.velocity(fᵢ, D2Q9.celerities, 1.) .== 0 => all
-        fᵢ[1] = 2
-        actual = thermodynamics.velocity(fᵢ, D2Q9.celerities, 1.)
-        @fact actual .== D2Q9.celerities[:, 1] => all
-        actual = thermodynamics.velocity(fᵢ, D2Q9.celerities, 2.)
-        @fact actual .== (0.5 * D2Q9.celerities[:, 1]) => all
-        actual = thermodynamics.velocity(fᵢ, D2Q9.celerities)
-        expected = D2Q9.celerities[:, 1] / thermodynamics.density(fᵢ)
-        @fact actual .== expected => all
-    end
+        context("rho is a geometric series") do
+            @fact thermodynamics.density(Float64[1:9...]) => roughly(10*9/2)
+            @fact thermodynamics.density(Float64[1:10...]) => roughly(10*11/2)
+        end
 
-    context("deviatoric tensor") do
-        fᵢ = 2*ones(Float64, 9)
-        fᵢ⁼ = ones(Float64, 9)
-        actual = thermodynamics.deviatoric(fᵢ, fᵢ⁼, D2Q9.celerities, 1.)
-        @fact actual .== diagm([3, 3]) => all
+        context("homogeneous populations sum to zero momentum") do
+            fᵢ = ones(Float64, ncomponents)
+            @fact thermodynamics.momentum(fᵢ, lattice.celerities) .== 0 => all
+            fᵢ[1] = 3 # This is the zero momentum component
+            @fact thermodynamics.momentum(fᵢ, lattice.celerities) .== 0 => all
+            fᵢ[2] = 2 # Now for a negative test
+            @fact thermodynamics.momentum(fᵢ, lattice.celerities) .!= 0 => any
+        end
 
-        fᵢ[1] = 6
-        actual = thermodynamics.deviatoric(fᵢ, fᵢ⁼, D2Q9.celerities, 1.)
-        @fact actual .== diagm([3, 3]) => all
+        context("velocity from momentum and density ") do
+            fᵢ = 1.0 + convert(Array{Float64}, rand(ncomponents))
+            actual = thermodynamics.velocity(fᵢ, lattice.celerities, 1.)
+            half = thermodynamics.velocity(fᵢ, lattice.celerities, 0.5)
+            ν = thermodynamics.momentum(fᵢ, lattice.celerities)
+            @fact actual => roughly(half * 0.5)
+            @fact actual => roughly(ν)
+        end
 
-        actual = thermodynamics.deviatoric(fᵢ, fᵢ⁼, D2Q9.celerities, 2.)
-        @fact actual .== diagm([0, 0]) => all
+        context("equilibrium function") do
+            wᵢ = Float64[1, 2, 3]
+            ē = Float64[1 0 1; 0 1 1]
+            ν = Float64[1, 2]
+            ρ = 1.1
 
-        actual = thermodynamics.deviatoric(fᵢ, fᵢ⁼, D2Q9.celerities, 0.)
-        @fact actual .== diagm([6, 6.]) => all
+            @fact equilibrium(ρ, zeros(2), ē, wᵢ) => roughly(wᵢ * ρ)
+            @fact equilibrium(ρ, ν, zeros(2, 3), wᵢ) => roughly(wᵢ * (ρ - 1.5  * 5./ρ))
 
-        fᵢ[2] = 3
-        actual = thermodynamics.deviatoric(fᵢ, fᵢ⁼, D2Q9.celerities, 1.)
-        c₂ = D2Q9.celerities[:, 2]
-        expected = 0.5(c₂ .* transpose(c₂)) + diagm([3, 3])
-        @fact actual .== expected => all
-
-
+            fᵉ = wᵢ .* (ρ - 1.5dot(ν, ν)/ρ + 4.5(ē.'ν).^2/ρ + 3ē.'ν)
+            @fact equilibrium(ρ, ν, ē, wᵢ) => roughly(fᵉ)
+        end
     end
 end
-
