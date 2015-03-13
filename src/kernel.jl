@@ -18,16 +18,21 @@ collision{T}(k::SingleRelaxationTime{T}, fᵢ::Vector{T}, feq::Vector{T}) = coll
 abstract Indexing <: Kernel
 # No frills indexing
 immutable Cartesian <: Indexing
+    dimensions::Vector{Int64}
 end
 # Indices are periodic
 immutable Periodic <: Indexing
-    dimensions::(Int64...)
+    dimensions::Vector{Int64}
 end
 
 # A function to retrieve array indices from simulation indices
-index(kernel::Indexing, indices) = indices
-function index{T}(kernel::Periodic, indices::Array{T})
-  T[1 + mod(i - 1, convert(T, d)) for (i, d) in zip(indices, kernel.dimensions)]
+# Dumps to zero if indices are out of bounds
+function index{T1 <: Int, T2 <: Int}(dimensions::Vector{T1}, indices::Vector{T2})
+    @assert(size(dimensions) == size(indices))
+    any(indices .< 1) || any(indices .> dimensions) ?
+        zeros(T2, size(indices)): indices
 end
+index(kernel::Indexing, indices) = index(kernel.dimensions, indices)
+index{T}(kernel::Periodic, indices::Array{T}) = 1 + mod(indices - 1, kernel.dimensions)
 
 end
