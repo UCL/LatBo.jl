@@ -7,12 +7,15 @@ using Base: Cartesian
 # - INLET: input into the simulation domain
 # - OUTLET: output out of the simulation domain
 # - NOTHING: convenience value when constructing grid
+# - NULL: means streaming to /dev/null
 typealias Feature Uint8
-const NOTHING = convert(Feature, 0)
-const FLUID   = convert(Feature, 1)
-const SOLID   = convert(Feature, 2)
-const INLET   = convert(Feature, 3)
-const OUTLET  = convert(Feature, 4)
+const NOTHING = convert(Feature, 1)
+const FLUID   = convert(Feature, 2)
+const SOLID   = convert(Feature, 3)
+const INLET   = convert(Feature, 4)
+const OUTLET  = convert(Feature, 5)
+const NULL    = convert(Feature, 6)
+const NUMBER_OF_FEATURE_TYPES = convert(Feature, 6)
 
 for N = 2:3
     @eval begin
