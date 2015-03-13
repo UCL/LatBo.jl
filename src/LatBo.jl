@@ -22,6 +22,8 @@ type Simulation{T <: FloatingPoint}
     lattice::Lattice
     # Collision kernel type and data
     collision::kernel.Collision
+    # Describes how streaming takes place
+    streamers :: (kernel.Streaming...)
     # Geometry indexing
     indexing::kernel.Indexing
     # Current population
@@ -33,7 +35,8 @@ type Simulation{T <: FloatingPoint}
 end
 
 # Creates single-relaxation time simulation
-function Simulation{T}(τ⁻¹::T, dimensions::(Int...); indexing::Type = kernel.Cartesian)
+function Simulation{T}(
+    τ⁻¹::T, dimensions::(Int...); indexing::Type{kernel.Collision} = kernel.Cartesian)
     @assert τ⁻¹ > 0
     @assert length(dimensions) == 2 || length(dimensions) == 3
     @assert indexing <: kernel.IndexingKernel
@@ -43,12 +46,17 @@ function Simulation{T}(τ⁻¹::T, dimensions::(Int...); indexing::Type = kernel
     else
         lattice = D3Q19
     end
-    SingleRelaxationTime{T}(
+    # Sets up the streamers
+    streaming = [NullStreaming() for i in 1:playground.NUMBER_OF_FEATURE_TYPES]
+    streaming[playground.FLUID] = kernel.BulkStreaming()
+
+    Simulation{T}(
         lattice,
+        SingleRelaxationTimeCollision(τ⁻¹),
+        indexing,
         zeros(T, tuple(len(lattice.weights), dimensions...)),
         zeros(T, tuple(len(lattice.weights), dimensions...)),
-        zeros(playground.Feature, dimensions),
-        SingleRelaxationTimeCollision(τ⁻¹)
+        zeros(playground.Feature, dimensions)
     )
 end
 
