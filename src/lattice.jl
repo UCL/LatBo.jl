@@ -37,3 +37,6 @@ const D3Q19 = Lattice{Float64, Int64}(
           0 0 0 1  0  0 -1 0  0  0  0 1 -1 -1  1 1 -1 -1  1],
   vcat(1./3., [1./18. for i=1:6], [1./36. for i=7:18])
 )
+
+const speed_of_sound_squared = 1.0 / 3.0
+const speed_of_sound = sqrt(speed_of_sound_squared)

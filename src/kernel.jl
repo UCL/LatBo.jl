@@ -1,10 +1,17 @@
-using LatBo: playground
-module kernel
+module lb
+using LatBo: Collision, Streaming, Indexing, thermodynamics, speed_of_sound_squared, Feature,
+        LocalKernel, Simulation
+using LatBo.thermodynamics: LocalQuantities
 
-# Base type for all kernally stuff
-abstract Kernel
-# Base type for all collision kernels
-abstract Collision <: Kernel
+type FluidKernel <: LocalKernel
+    # Collision kernel type and data
+    collision::Collision
+    # Describes how streaming takes place
+    streamers :: Dict{Feature, Streaming}
+end
+type NullKernel <: LocalKernel
+end
+
 type SingleRelaxationTime{T <: Real} <: Collision
     # Inverse of the relaxation time
     τ⁻¹::T
@@ -14,8 +21,6 @@ end
 collision{T}(τ⁻¹::T, fᵢ::Vector{T}, feq::Vector{T}) = τ⁻¹ * (feq - fᵢ)
 collision{T}(k::SingleRelaxationTime{T}, fᵢ::Vector{T}, feq::Vector{T}) = collision(k.τ⁻¹, feq, fᵢ)
 
-# Base type for all indexing kernels
-abstract Indexing <: Kernel
 # No frills indexing
 immutable Cartesian <: Indexing
     dimensions::Vector{Int64}
@@ -32,35 +37,113 @@ function index{T1 <: Int, T2 <: Int}(dimensions::Vector{T1}, indices::Vector{T2}
     any(indices .< 1) || any(indices .> dimensions) ?
         zeros(T2, size(indices)): indices
 end
-index(kernel::Indexing, indices) = index(kernel.dimensions, indices)
+index(kernel::Indexing, indices) = indices
+index(kernel::Cartesian, indices) = index(kernel.dimensions, indices)
 index{T <: Int}(kernel::Periodic, indices::Array{T}) = 1 + mod(indices - 1, kernel.dimensions)
 
-abstract Streaming <: Kernel
+# Defines streaming types and operators
 abstract WallStreaming <: Streaming
 abstract IOLetStreaming <: Streaming
-type BulkStreaming <: Streaming
+immutable type FluidStreaming <: Streaming
 end
-type NullStreaming <: Streaming
+immutable type NullStreaming <: Streaming
 end
-
-function streaming{T <: Int}(simulation, indices::Vector{T}, direction::T)
-  const from = index(simulation.indexing, indices)...
-  const to_v = index(simulation.indexing, indices + simulation.lattice.celerities[direction])
-  const to = to_v...
-
-  const link = all(to_v .== 0) ? playground.NOTHING: simulation.playground[to]
-  stream_to_nothing(simulation.streamers[link], simulation, from, to, direction)
+immutable type HalfWayBounceBack <: Streaming
 end
+const NULLSTREAMER = NullStreaming()
 
 # Do nothing when streaming to null, by default
-streaming(streamer::NullStreaming, args...) = nothing
-# Normal bulk streaming
-function streaming{T <: Int}(
-    streamer::BulkStreaming, simulation, from::(T...), to::(T...), direction::T)
+streaming(::NullStreaming, args...) = nothing
+# Some overloading to simplify specialized functions where possible
+streaming{T, I}(
+    streamer::Streaming, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), to::(I...), direction::I
+) = streaming(streamer, sim, from, to, direction)
+streaming{T, I}(
+    streamer::Streaming, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), to::(I...), direction::I
+) = streaming(streamer, quantities, sim, from, direction)
+streaming{T, I}(
+    streamer::Streaming, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I
+) = streaming{T, I}(streamer, sim, from, direction)
+# Normal streaming from fluid to fluid
+function streaming{T, I}(
+    ::FluidStreaming, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I)
 
     @assert(length(from) == length(to))
-    simulation.next_populations[tuple(direction, to...)] =
-        simulation.next_populations[tuple(direction, from...)]
+    sim.next_populations[direction, to...] = sim.populations[direction, from...]
 end
 # Half-way bounce back streaming
+function streaming{T, I}(::HalfWayBounceBack, sim::Simulation{T, I}, from::(I...), direction::I)
+    const invdir = sim.lattice.inversion[direction]
+    sim.next_populations[invdir, from...] = sim.populations[direction, from...]
+end
+
+
+# Create a parabolic velocity inlet
+abstract VelocityIOlet{T} <: IOLetStreaming
+type ParabolicVelocityIOlet{T} <: IOLetStreaming
+    # Direction of the inlet
+    normal :: Vector{T}
+    # Center of the inlet
+    center :: Vector{T}
+    # Radius of the inlet
+    radius :: T
+    # Maximum speed
+    maxspeed :: Vector{T}
+end
+
+function streaming{T, I}(
+    streamer::VelocityIOlet, sim::Simulation{T, I},
+    from::(I...), to::(I...), direction::I)
+    const celerity = sim.lattice.celerities[:, direction]
+    const bb_direction = sim.lattice.inversion[direction]
+    const weight = sim.lattice.weights[direction]
+    const halfway = T[to...] + 0.5celerities[:, direction]
+    const momentum = velocity(streamer, halfway, sim.time)
+    const correction = 2weight * dot(celerity, momentum) / speed_of_sound_squared
+    sim.next_populations[bb_direction, from...] = sim.populations[direction, from...] - correction
+end
+
+function velocity(iolet::ParabolicVelocityIOlet, position, time)
+    const centered = position - iolet.center
+    const z = dot(centered, iolet.normal)
+    const radial = (dot(centered, centered) - z * z) / iolet.radius / iolet.radius
+    ((1 - radial) * iolet.maxspeed) * iolet.normal
+end
+
+
+abstract PressureIOlet{T} <: IOLetStreaming
+type NashZeroOrderPressure{T} <: IOLetStreaming
+    # Direction of the inlet
+    normal :: Vector{T}
+    # Density at the inlet
+    density :: T
+end
+
+function streaming{T, I}(
+    iolet::NashZeroOrderPressure, quantitie::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), direction::I)
+    const invdir = sim.lattice.inversion[direction]
+    const iolet_μ = iolet.density * dot(iolet.normal, quantities.velocity) * iolet.normal
+    const cᵢ = sim.lattice.celerities[:, invdir:invdir]
+    const wᵢ = sim.lattice.weights[invdir:invdir]
+    const feq = thermodynamics.equilibrium(iolet.density, iolet_μ, cᵢ, wᵢ)[1]
+    sim.next_populations[invdir, from...] = feq
+end
+
+local_kernel(kernel::NullKernel, args...; kargs...) = nothing
+function local_kernel{T, I}(kernel::FluidKernel, sim::Simulation{T, I}, indices::Vector{I})
+    const from = indexing(sim.indexing, indices)
+    const quantities = LocalQuantities(indices, sim.population[:, from], sim.lattice)
+    sim.populations[:, from] = collision(kernel.collision, sim.population[:, from], quantities.feq)
+    for direction in 1:length(sim.lattice.weights)
+      const to_v = index(sim.indexing, indices + sim.lattice.celerities[direction])
+      const to = to_v...
+      const link = all(to_v .== 0) ? playground.NOTHING: sim.playground[to]
+      const streamer = get(kernel.streamers, link, NULLSTREAMER)
+      streaming(streamer, quantities, sim, from, to, direction)
+    end
+end
+
 end

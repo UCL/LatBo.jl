@@ -1,37 +1,54 @@
 module thermodynamics
-using LatBo: Lattice
+using LatBo: Lattice, speed_of_sound
 
 # Density at a given lattice site
-density(fᵢ) = sum(fᵢ)
+density(fᵢ::Vector) = sum(fᵢ)
 # Momentum at given site
-momentum(fᵢ, cᵢ) = vec(sum(cᵢ .* transpose(fᵢ), 2))
+momentum(fᵢ::Vector, cᵢ::Matrix) = vec(sum(cᵢ .* transpose(fᵢ), 2))
 # Velocities at a given lattice site
-velocity(fᵢ, cᵢ, ρ) = momentum(fᵢ, cᵢ) / ρ
-velocity(fᵢ, cᵢ) = velocity(fᵢ, cᵢ, density(fᵢ))
+velocity(μ::Vector, ρ::Number) = μ / ρ
+velocity(fᵢ::Vector, cᵢ::Matrix, ρ::Number) = velocity(momentum(fᵢ, cᵢ), ρ)
+velocity(fᵢ::Vector, cᵢ::Matrix) = velocity(fᵢ, cᵢ, density(fᵢ))
 
 #= Computes the equilibrium particle distributions $f^{eq}$:
 
-    velocity: Macroscopic velocity vector ν at current lattice site
+    momentum: Macroscopic momentum μ at current lattice site
     celerities: d by n matrix of celerities ē for the lattice, with d the dimensionality of the
         lattice and n the number of particle distributions.
     weights: Weights associated with each celerity
     ρ: Density
 
-    $f^{eq}$ = weights .* [ρ + 3ē⋅ν + \frac{9}{2ρ} (ē⋅ν)² - \frac{3}{2ρ} ν⋅ν]$
+    $f^{eq}$ = weights .* [ρ + 3ē⋅μ + \frac{9}{2ρ} (ē⋅μ)² - \frac{3}{2ρ} μ⋅μ]$
 =#
-function equilibrium{T}(ρ::T, velocity::Vector{T}, celerities::Matrix{T}, weights::Vector{T})
-    # computes velocity projected on each particle celerity first
-    ν_on_ē = celerities.'velocity
+function equilibrium{T}(ρ::T, momentum::Vector{T}, celerities::Matrix{T}, weights::Vector{T})
+    # computes momentum projected on each particle celerity first
+    μ_on_ē = celerities.'momentum
     weights .* (
         ρ
-        + 3ν_on_ē
-        + 9/(2ρ) * (ν_on_ē .* ν_on_ē)
-        - 3/(2ρ) * dot(velocity, velocity)
+        + 3μ_on_ē
+        + 9/(2ρ) * (μ_on_ē .* μ_on_ē)
+        - 3/(2ρ) * dot(momentum, momentum)
     )
 end
 
-function equilibrium{T}(lattice::Lattice, ρ::T, velocity::Vector{T})
-  equilibrium(ρ, velocity, lattice.celerities, lattice.weights, lattice.speed_of_sound)
+equilibrium{T}(lattice::Lattice, ρ::T, momentum::Vector{T}) =
+    equilibrium(ρ, momentum, lattice.celerities, lattice.weights)
+
+immutable type LocalQuantities{T <: Real, I <: Int}
+    from::Vector{I}
+    density::T
+    momentum::Vector{T}
+    velocity::Vector{T}
+    feq::Vector{T}
+
+    function LocalQuantities(from::Vector{I}, fᵢ::Vector{T}, lattice::Lattice{T, I})
+        const ρ = thermodynamics.density(fᵢ)
+        const μ = thermodynamics.momentum(fᵢ, lattice.celerities)
+        const ν = thermodynamics.velocity(μ, ρ)
+        const feq = thermodynamics.equilibrium(ρ, μ, lattice.celerities, lattice.weights)
+        new(from, ρ, μ, ν, feq)
+    end
 end
+
 
 end

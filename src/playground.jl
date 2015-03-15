@@ -1,5 +1,6 @@
 module playground
 using Base: Cartesian
+using LatBo: Feature
 
 # Enumerates possible features on the grid:
 # - FLUID: Site on which to perform standard lattice-boltzmann
@@ -8,7 +9,6 @@ using Base: Cartesian
 # - OUTLET: output out of the simulation domain
 # - NOTHING: convenience value when constructing grid
 # - NULL: means streaming to /dev/null
-typealias Feature Uint8
 const NOTHING = convert(Feature, 1)
 const FLUID   = convert(Feature, 2)
 const SOLID   = convert(Feature, 3)
