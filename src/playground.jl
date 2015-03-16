@@ -1,6 +1,6 @@
 module playground
 using Base: Cartesian
-using LatBo: Feature
+using ..Feature
 
 # Enumerates possible features on the grid:
 # - FLUID: Site on which to perform standard lattice-boltzmann

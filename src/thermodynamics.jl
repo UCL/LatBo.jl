@@ -1,5 +1,5 @@
 module thermodynamics
-using LatBo: Lattice, speed_of_sound
+using ..Lattice
 
 # Density at a given lattice site
 density(fᵢ::Vector) = sum(fᵢ)

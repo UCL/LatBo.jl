@@ -1,7 +1,13 @@
 module lb
-using LatBo: Collision, Streaming, Indexing, thermodynamics, speed_of_sound_squared, Feature,
-        LocalKernel, Simulation
-using LatBo.thermodynamics: LocalQuantities
+using ..Collision
+using ..Streaming
+using ..Indexing
+using ..thermodynamics
+using ..speed_of_sound_squared
+using ..Feature
+using ..LocalKernel
+using ..Simulation
+using ..thermodynamics.LocalQuantities
 
 type FluidKernel <: LocalKernel
     # Collision kernel type and data
