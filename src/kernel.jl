@@ -86,7 +86,14 @@ type ParabolicVelocityIOlet{T} <: VelocityIOlet
     # Radius of the inlet
     radius :: T
     # Maximum speed
-    maxspeed :: Vector{T}
+    maxspeed :: T
+
+    function ParabolicVelocityIOlet(n₀, Γ, r₀, ν_max)
+        n = T[n₀...]
+        @assert ndims(n₀) == 1 && ndims(Γ) == 1 && length(Γ) == length(n₀)
+        @assert dot(n, n) > 1e-12 && r₀ > 1e-12 && ν_max > 1e-12
+        new(n / sqrt(dot(n, n)), T[Γ...], r₀, ν_max)
+    end
 end
 
 function streaming{T, I}(
@@ -100,12 +107,15 @@ function streaming{T, I}(
     sim.next_populations[bb_direction, from...] = sim.populations[direction, from...] - correction
 end
 
-function velocity(iolet::ParabolicVelocityIOlet, position, time)
+# Time-independent parabolic inlet
+function velocity(iolet::ParabolicVelocityIOlet, position)
     const centered = position - iolet.center
     const z = dot(centered, iolet.normal)
     const radial = (dot(centered, centered) - z * z) / iolet.radius / iolet.radius
     ((1 - radial) * iolet.maxspeed) * iolet.normal
 end
+# Overload for time-independent inlets
+velocity(iolet::VelocityIOlet, position, time) = velocity(iolet, position)
 
 
 abstract PressureIOlet{T} <: IOLetStreaming

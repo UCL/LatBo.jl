@@ -1,7 +1,7 @@
 using FactCheck: facts, @fact, roughly
 using LatBo: Indexing, D3Q19, Simulation, speed_of_sound_squared
 using LatBo.lb: collision, index, Cartesian, Periodic, streaming, FluidStreaming,
-        HalfWayBounceBack, IOLetStreaming, VelocityIOlet
+        HalfWayBounceBack, IOLetStreaming, VelocityIOlet, ParabolicVelocityIOlet
 import LatBo.lb.velocity
 
 type DummyVelocityIOlet <: VelocityIOlet
@@ -86,33 +86,57 @@ facts("Kernel actions") do
     end
 
     context("Velocity iolet") do
+        context("General algorithm") do
+            const cᵢ = sim.lattice.celerities
+            const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
+            const invdir = find([all(cᵢ[:, i] .== [1, -1]) for i in 1:size(cᵢ, 2)])[1]
+            const start = (3, 3)
+            const finish = (2, 4)
+            const halfway = Float64[start...] + 0.5*Float64[-1, 1]
+            sim.time = 40.0
 
-        const cᵢ = sim.lattice.celerities
-        const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
-        const invdir = find([all(cᵢ[:, i] .== [1, -1]) for i in 1:size(cᵢ, 2)])[1]
-        const start = (3, 3)
-        const finish = (2, 4)
-        const halfway = Float64[start...] + 0.5*Float64[-1, 1]
-        sim.time = 40.0
+            sim.populations[:] = 0
+            sim.next_populations[:] = 0
+            @fact sim.lattice.inversion[direction] => invdir
+            sim.populations[direction, start...] = 1
+            @fact sim.next_populations .== 0 => all
 
+            # perform streaming
+            iolet = DummyVelocityIOlet()
+            streaming(iolet, sim, start, finish, direction)
 
-        sim.populations[:] = 0
-        sim.next_populations[:] = 0
-        @fact sim.lattice.inversion[direction] => invdir
-        sim.populations[direction, start...] = 1
-        @fact sim.next_populations .== 0 => all
+            @fact iolet.position => roughly(Float64[2.5, 3.5])
+            @fact iolet.time => roughly(sim.time)
+            # 20 is the celerity * momentum
+            expected = 2sim.lattice.weights[direction] / speed_of_sound_squared * 20
+            @fact sim.next_populations[invdir, start...] => roughly(1 - expected)
+            @fact sum(abs(sim.next_populations)) => roughly(abs(1 - expected))
+            @fact sim.populations[direction, start...] => roughly(1)
+            @fact sum(abs(sim.populations)) => roughly(1)
+        end
 
-        # perform streaming
-        iolet = DummyVelocityIOlet()
-        streaming(iolet, sim, start, finish, direction)
+        context("parabolic") do
+            const n₀, n₁, Γ, r, ν_max = [1., 0], [0., 1], [5., 5], 5., 10.
+            const ϵ = 1e-6
+            iolet = ParabolicVelocityIOlet{Float64}(n₀, Γ, r, ν_max)
 
-        @fact iolet.position => roughly(Float64[2.5, 3.5])
-        @fact iolet.time => roughly(sim.time)
-        # 20 is the celerity * momentum
-        expected = 2sim.lattice.weights[direction] / speed_of_sound_squared * 20
-        @fact sim.next_populations[invdir, start...] => roughly(1 - expected)
-        @fact sum(abs(sim.next_populations)) => roughly(abs(1 - expected))
-        @fact sim.populations[direction, start...] => roughly(1)
-        @fact sum(abs(sim.populations)) => roughly(1)
+            # should be zero at radius
+            @fact velocity(iolet, Γ + r * n₁ + rand() * n₀) => roughly(zeros(Float64, 2))
+            # should be ν_max at origin
+            @fact velocity(iolet, Γ) => roughly(ν_max * n₀)
+            # should be 0.75 * ν_max at origin + 1/2 radius
+            @fact velocity(iolet, Γ + 0.5r*n₁) => roughly(0.75ν_max * n₀)
+
+            # velocity should be along normal
+            @fact dot(velocity(iolet, Γ + 2r*rand(Float64, 2)), n₁) => roughly(0)
+            # velocity should not depend on position along normal
+            α = Γ + 2r*rand(Float64, 2)
+            @fact velocity(iolet, α + r * rand() * n₀) => roughly(velocity(iolet, α))
+
+            # velocity should be maximum at origin and equal to maxspeed
+            α = Γ + 2r*rand() * n₀
+            δν = velocity(iolet, α + ϵ * n₁) - velocity(iolet, α - ϵ * n₁)
+            @fact dot(δν, n₀) => roughly(0)
+        end
     end
 end
