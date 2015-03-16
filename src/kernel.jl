@@ -98,7 +98,7 @@ type ParabolicVelocityIOlet{T} <: VelocityIOlet
         n = T[n₀...]
         @assert ndims(n₀) == 1 && ndims(Γ) == 1 && length(Γ) == length(n₀)
         @assert dot(n, n) > 1e-12 && r₀ > 1e-12 && ν_max > 1e-12
-        new(n / sqrt(dot(n, n)), T[Γ...], r₀, ν_max)
+        new(n / norm(n), T[Γ...], r₀, ν_max)
     end
 end
 
@@ -130,13 +130,22 @@ type NashZeroOrderPressure{T} <: IOLetStreaming
     normal :: Vector{T}
     # Density at the inlet
     density :: T
+    function NashZeroOrderPressure(n₀, ρ)
+        n = T[n₀...]
+        @assert dot(n, n) > 1e-12 && ρ > 1e-12
+        new(n / norm(n), ρ)
+    end
 end
 
-function streaming{T, I}(
+streaming{T, I}(
     iolet::NashZeroOrderPressure, quantitie::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), direction::I
+) = streaming(iolet, quantities.velocity, sim, from, direction)
+function streaming{T, I}(
+    iolet::NashZeroOrderPressure, velocity::Vector{T}, sim::Simulation{T, I},
     from::(I...), direction::I)
     const invdir = sim.lattice.inversion[direction]
-    const iolet_μ = iolet.density * dot(iolet.normal, quantities.velocity) * iolet.normal
+    const iolet_μ = iolet.density * dot(iolet.normal, velocity) * iolet.normal
     const cᵢ = sim.lattice.celerities[:, invdir:invdir]
     const wᵢ = sim.lattice.weights[invdir:invdir]
     const feq = thermodynamics.equilibrium(iolet.density, iolet_μ, cᵢ, wᵢ)[1]

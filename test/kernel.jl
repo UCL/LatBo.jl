@@ -1,7 +1,10 @@
 using FactCheck: facts, @fact, roughly
 using LatBo: Indexing, D3Q19, Simulation, speed_of_sound_squared
 using LatBo.lb: collision, index, Cartesian, Periodic, streaming, FluidStreaming,
-        HalfWayBounceBack, IOLetStreaming, VelocityIOlet, ParabolicVelocityIOlet
+        HalfWayBounceBack, IOLetStreaming, VelocityIOlet, ParabolicVelocityIOlet,
+        NashZeroOrderPressure
+using LatBo.thermodynamics: equilibrium
+# velocity must be extended
 import LatBo.lb.velocity
 
 type DummyVelocityIOlet <: VelocityIOlet
@@ -17,6 +20,8 @@ end
 
 
 facts("Kernel actions") do
+    sim = Simulation(D2Q9, (4, 4))
+
     context("Cartesian indexing") do
         @fact index(Cartesian([10, 10, 10]), [1, 2, 3]) => [1, 2, 3]
         @fact index(Cartesian([10, 10, 30]), [8, 10, 20]) => [8, 10, 20]
@@ -43,8 +48,6 @@ facts("Kernel actions") do
         @fact collision(τ⁻¹, f, 2*f) => τ⁻¹ * f
         @fact collision(τ⁻¹, 4*f, 2*f) => collision(2*τ⁻¹, 2*f, f)
     end
-
-    sim = Simulation(D2Q9, (4, 4))
 
     context("Fluid to Fluid streaming") do
         sim.populations[:] = 0
@@ -137,6 +140,31 @@ facts("Kernel actions") do
             α = Γ + 2r*rand() * n₀
             δν = velocity(iolet, α + ϵ * n₁) - velocity(iolet, α - ϵ * n₁)
             @fact dot(δν, n₀) => roughly(0)
+        end
+
+        context("Nash zero pressure") do
+            const n₀, n₁, ρ = [1., 0], [0., 1], 5.
+            const cᵢ = sim.lattice.celerities
+            const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
+            const invdir = find([all(cᵢ[:, i] .== [1, -1]) for i in 1:size(cᵢ, 2)])[1]
+            const start = (3, 3)
+            const ν₀ = 5n₀ + 6n₁
+
+            iolet = NashZeroOrderPressure{Float64}(n₀, ρ)
+
+            # expected values
+            μ = ρ * dot(ν₀, n₀)n₀
+            feq = equilibrium(ρ, μ, sim.lattice.celerities, sim.lattice.weights)
+
+            streaming(iolet, ν₀, sim, start, direction)
+            @fact sim.next_populations[invdir, start...] => roughly(feq[invdir])
+            @fact sum(abs(sim.next_populations[invdir, start...])) => roughly(feq[invdir])
+
+            # original population has no effect
+            sim.populations = 1.0 + rand(Float64, size(sim.populations))
+            streaming(iolet, ν₀, sim, start, direction)
+            @fact sim.next_populations[invdir, start...] => roughly(feq[invdir])
+            @fact sum(abs(sim.next_populations[invdir, start...])) => roughly(feq[invdir])
         end
     end
 end
