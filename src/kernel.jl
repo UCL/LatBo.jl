@@ -9,8 +9,7 @@ type FluidKernel <: LocalKernel
     # Describes how streaming takes place
     streamers :: Dict{Feature, Streaming}
 end
-type NullKernel <: LocalKernel
-end
+type NullKernel <: LocalKernel; end
 
 type SingleRelaxationTime{T <: Real} <: Collision
     # Inverse of the relaxation time
@@ -44,12 +43,9 @@ index{T <: Int}(kernel::Periodic, indices::Array{T}) = 1 + mod(indices - 1, kern
 # Defines streaming types and operators
 abstract WallStreaming <: Streaming
 abstract IOLetStreaming <: Streaming
-immutable type FluidStreaming <: Streaming
-end
-immutable type NullStreaming <: Streaming
-end
-immutable type HalfWayBounceBack <: Streaming
-end
+immutable type FluidStreaming <: Streaming; end
+immutable type NullStreaming <: Streaming; end
+immutable type HalfWayBounceBack <: Streaming; end
 const NULLSTREAMER = NullStreaming()
 
 # Do nothing when streaming to null, by default
@@ -81,8 +77,8 @@ end
 
 
 # Create a parabolic velocity inlet
-abstract VelocityIOlet{T} <: IOLetStreaming
-type ParabolicVelocityIOlet{T} <: IOLetStreaming
+abstract VelocityIOlet <: IOLetStreaming
+type ParabolicVelocityIOlet{T} <: VelocityIOlet
     # Direction of the inlet
     normal :: Vector{T}
     # Center of the inlet
@@ -94,14 +90,13 @@ type ParabolicVelocityIOlet{T} <: IOLetStreaming
 end
 
 function streaming{T, I}(
-    streamer::VelocityIOlet, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I)
-    const celerity = sim.lattice.celerities[:, direction]
+        streamer::VelocityIOlet, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I)
     const bb_direction = sim.lattice.inversion[direction]
-    const weight = sim.lattice.weights[direction]
-    const halfway = T[to...] + 0.5celerities[:, direction]
-    const momentum = velocity(streamer, halfway, sim.time)
-    const correction = 2weight * dot(celerity, momentum) / speed_of_sound_squared
+    const cᵢ = sim.lattice.celerities[:, direction]
+    const wᵢ = sim.lattice.weights[direction]
+    const halfway = T[from...] + 0.5cᵢ
+    const μ = velocity(streamer, halfway, sim.time)
+    const correction = 2wᵢ * dot(cᵢ, μ) / speed_of_sound_squared
     sim.next_populations[bb_direction, from...] = sim.populations[direction, from...] - correction
 end
 

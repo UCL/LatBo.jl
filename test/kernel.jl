@@ -1,6 +1,20 @@
 using FactCheck: facts, @fact, roughly
-using LatBo: Indexing, D3Q19, Simulation
-using LatBo.lb: collision, index, Cartesian, Periodic, streaming, FluidStreaming, HalfWayBounceBack
+using LatBo: Indexing, D3Q19, Simulation, speed_of_sound_squared
+using LatBo.lb: collision, index, Cartesian, Periodic, streaming, FluidStreaming,
+        HalfWayBounceBack, IOLetStreaming, VelocityIOlet
+import LatBo.lb.velocity
+
+type DummyVelocityIOlet <: VelocityIOlet
+    position::Vector{Float64}
+    time::Float64
+    DummyVelocityIOlet() = new(Float64[], 0)
+end
+function velocity(streamer::DummyVelocityIOlet, position, time)
+    streamer.position = deepcopy(position)
+    streamer.time = time
+    Float64[-10, 10]
+end
+
 
 facts("Kernel actions") do
     context("Cartesian indexing") do
@@ -46,6 +60,9 @@ facts("Kernel actions") do
         # Check it went to the right place and only there
         @fact sim.next_populations[direction, finish...] => roughly(1)
         @fact sum(abs(sim.next_populations)) => roughly(1)
+        # Check populations was not affected
+        @fact sim.populations[direction, start...] => roughly(1)
+        @fact sum(abs(sim.populations)) => roughly(1)
     end
 
     context("Halfway bounce-back streaming") do
@@ -64,5 +81,38 @@ facts("Kernel actions") do
         # Check it went to the right place and only there
         @fact sim.next_populations[invdir, start...] => roughly(1)
         @fact sum(abs(sim.next_populations)) => roughly(1)
+        @fact sim.populations[direction, start...] => roughly(1)
+        @fact sum(abs(sim.populations)) => roughly(1)
+    end
+
+    context("Velocity iolet") do
+
+        const cᵢ = sim.lattice.celerities
+        const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
+        const invdir = find([all(cᵢ[:, i] .== [1, -1]) for i in 1:size(cᵢ, 2)])[1]
+        const start = (3, 3)
+        const finish = (2, 4)
+        const halfway = Float64[start...] + 0.5*Float64[-1, 1]
+        sim.time = 40.0
+
+
+        sim.populations[:] = 0
+        sim.next_populations[:] = 0
+        @fact sim.lattice.inversion[direction] => invdir
+        sim.populations[direction, start...] = 1
+        @fact sim.next_populations .== 0 => all
+
+        # perform streaming
+        iolet = DummyVelocityIOlet()
+        streaming(iolet, sim, start, finish, direction)
+
+        @fact iolet.position => roughly(Float64[2.5, 3.5])
+        @fact iolet.time => roughly(sim.time)
+        # 20 is the celerity * momentum
+        expected = 2sim.lattice.weights[direction] / speed_of_sound_squared * 20
+        @fact sim.next_populations[invdir, start...] => roughly(1 - expected)
+        @fact sum(abs(sim.next_populations)) => roughly(abs(1 - expected))
+        @fact sim.populations[direction, start...] => roughly(1)
+        @fact sum(abs(sim.populations)) => roughly(1)
     end
 end
