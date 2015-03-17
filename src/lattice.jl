@@ -1,5 +1,5 @@
 type Lattice{T <: Real, I <: Int}
-    celerities::Matrix{T}
+    celerities::Matrix{I}
     weights::Vector{T}
     inversion::Vector{I}
 

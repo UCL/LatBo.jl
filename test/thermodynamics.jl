@@ -33,12 +33,12 @@ facts("Verify thermodynamic quantities") do
 
             context("equilibrium function") do
                 wᵢ = Float64[1, 2, 3]
-                ē = Float64[1 0 1; 0 1 1]
+                ē = Int64[1 0 1; 0 1 1]
                 μ = Float64[1, 2]
                 ρ = 1.1
 
                 @fact equilibrium(ρ, zeros(2), ē, wᵢ) => roughly(wᵢ * ρ)
-                @fact equilibrium(ρ, μ, zeros(2, 3), wᵢ) => roughly(wᵢ * (ρ - 1.5  * 5./ρ))
+                @fact equilibrium(ρ, μ, zeros(Int64, 2, 3), wᵢ) => roughly(wᵢ * (ρ - 1.5  * 5./ρ))
 
                 fᵉ = wᵢ .* (ρ - 1.5dot(μ, μ)/ρ + 4.5(ē.'μ).^2/ρ + 3ē.'μ)
                 @fact equilibrium(ρ, μ, ē, wᵢ) => roughly(fᵉ)

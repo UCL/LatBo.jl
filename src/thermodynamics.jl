@@ -20,7 +20,7 @@ velocity(fᵢ::Vector, cᵢ::Matrix) = velocity(fᵢ, cᵢ, density(fᵢ))
 
     $f^{eq}$ = weights .* [ρ + 3ē⋅μ + \frac{9}{2ρ} (ē⋅μ)² - \frac{3}{2ρ} μ⋅μ]$
 =#
-function equilibrium{T}(ρ::T, momentum::Vector{T}, celerities::Matrix{T}, weights::Vector{T})
+function equilibrium{T, I}(ρ::T, momentum::Vector{T}, celerities::Matrix{I}, weights::Vector{T})
     # computes momentum projected on each particle celerity first
     μ_on_ē = celerities.'momentum
     weights .* (
