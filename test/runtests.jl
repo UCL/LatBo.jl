@@ -5,8 +5,8 @@ using FactCheck
 include("thermodynamics.jl")
 include("lattice.jl")
 include("kernel.jl")
+include("geometry.jl")
 FactCheck.exitstatus()
-#= @runtest LatBo geometry =#
 #= @runtest LatBo playground =#
 #= @runtest LatBo initialization =#
 #= @runtest LatBo collision =#
