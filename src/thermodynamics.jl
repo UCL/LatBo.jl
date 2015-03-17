@@ -30,6 +30,8 @@ function equilibrium{T, I}(ρ::T, momentum::Vector{T}, celerities::Matrix{I}, we
         - 3/(2ρ) * dot(momentum, momentum)
     )
 end
+equilibrium{T, I}(lattice::Lattice{T, I}, fᵢ::Vector{T}) =
+    equilibrium(density(fᵢ), momentum(fᵢ, lattice.celerities), lattice.celerities, lattice.weights)
 
 equilibrium{T}(lattice::Lattice, ρ::T, momentum::Vector{T}) =
     equilibrium(ρ, momentum, lattice.celerities, lattice.weights)

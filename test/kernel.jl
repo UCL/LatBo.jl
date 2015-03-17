@@ -1,22 +1,44 @@
-using FactCheck: facts, @fact, roughly
-using LatBo: Indexing, D3Q19, Simulation, speed_of_sound_squared
-using LatBo.lb: collision, index, Cartesian, Periodic, streaming, FluidStreaming,
+using FactCheck: facts, @fact, roughly, exactly
+using LatBo: Indexing, D3Q19, Simulation, speed_of_sound_squared, Feature, Streaming, Collision
+using LatBo.lb: collision, index, Cartesian, Periodic, FluidStreaming,
         HalfWayBounceBack, IOLetStreaming, VelocityIOlet, ParabolicVelocityIOlet,
-        NashZeroOrderPressure
+        NashZeroOrderPressure, FluidKernel, local_kernel
 using LatBo.thermodynamics: equilibrium
-# velocity must be extended
+# the following functions are extended for mock types
 import LatBo.lb.velocity
+import LatBo.lb.collision
+import LatBo.lb.streaming
 
-type DummyVelocityIOlet <: VelocityIOlet
+type MockVelocityIOlet <: VelocityIOlet
     position::Vector{Float64}
     time::Float64
-    DummyVelocityIOlet() = new(Float64[], 0)
+    MockVelocityIOlet() = new(Float64[], 0)
 end
-function velocity(streamer::DummyVelocityIOlet, position, time)
+function velocity(streamer::MockVelocityIOlet, position, time)
     streamer.position = deepcopy(position)
     streamer.time = time
     Float64[-10, 10]
 end
+
+type MockCollision <: Collision
+    calls
+    args
+    MockCollision() = new(0, nothing)
+end
+function collision(collider::MockCollision, args...)
+    collider.calls += 1
+    collider.args = deepcopy(args)
+    1.5
+end
+
+type MockStreaming <: Streaming
+    args :: Vector{Any}
+    MockStreaming() = new(Any[])
+end
+function streaming(streamer::MockStreaming, quantities, sim, from, to, direction)
+    push!(streamer.args, tuple(deepcopy(quantities), sim, from, to, direction))
+end
+
 
 
 facts("Kernel actions") do
@@ -105,7 +127,7 @@ facts("Kernel actions") do
             @fact sim.next_populations .== 0 => all
 
             # perform streaming
-            iolet = DummyVelocityIOlet()
+            iolet = MockVelocityIOlet()
             streaming(iolet, sim, start, finish, direction)
 
             @fact iolet.position => roughly(Float64[2.5, 3.5])
@@ -166,5 +188,55 @@ facts("Kernel actions") do
             @fact sim.next_populations[invdir, start...] => roughly(feq[invdir])
             @fact sum(abs(sim.next_populations[invdir, start...])) => roughly(feq[invdir])
         end
+    end
+end
+
+facts("Local fluid kernel") do
+    sim = Simulation(D2Q9, (4, 4))
+
+    const start = [3, 3]
+    const cᵢ = sim.lattice.celerities
+    const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
+    const finish = start + cᵢ[:, direction]
+
+    kernel = FluidKernel(
+        MockCollision(),
+        {
+            convert(Feature, 9) => MockStreaming(),
+            convert(Feature, 42) => MockStreaming(),
+            convert(Feature, 0) => MockStreaming()
+        }
+    )
+    sim.playground[:] = 0
+    sim.playground[finish...] = 42
+    sim.playground[start...] = 9
+    const fᵢ = 1 + rand(Float64, size(sim.populations, 1))
+    const feq = equilibrium(sim.lattice, fᵢ)
+    sim.populations[:, start...] = fᵢ
+
+    context("Check mock calls") do
+
+        local_kernel(kernel, sim, start)
+
+        @fact kernel.collision.calls => 1
+        @fact length(kernel.collision.args) => 2
+        @fact kernel.collision.args[1] => roughly(fᵢ)
+        @fact kernel.collision.args[2] => roughly(feq)
+
+        @fact length(kernel.streamers[42].args) => 1
+        @fact length(kernel.streamers[9].args) => 1
+        @fact length(kernel.streamers[0].args) => size(sim.populations, 1) - 2
+
+        @fact kernel.streamers[42].args[1][2] => exactly(sim)
+        @fact kernel.streamers[42].args[1][1].feq => roughly(feq)
+        @fact kernel.streamers[42].args[1][3] => tuple(start...)
+        @fact kernel.streamers[42].args[1][4] => tuple(finish...)
+        @fact kernel.streamers[42].args[1][5] => direction
+
+        @fact kernel.streamers[9].args[1][2] => exactly(sim)
+        @fact kernel.streamers[9].args[1][3] => tuple(start...)
+        @fact kernel.streamers[9].args[1][4] => tuple(start...)
+        zerodir = findfirst([all(cᵢ[:, i] .== 0) for i in 1:size(cᵢ, 2)])
+        @fact kernel.streamers[9].args[1][5] => zerodir
     end
 end

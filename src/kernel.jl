@@ -56,26 +56,25 @@ const NULLSTREAMER = NullStreaming()
 
 # Do nothing when streaming to null, by default
 streaming(::NullStreaming, args...) = nothing
-# Some overloading to simplify specialized functions where possible
-streaming{T, I}(
-    streamer::Streaming, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I
-) = streaming(streamer, sim, from, to, direction)
-streaming{T, I}(
-    streamer::Streaming, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I
-) = streaming(streamer, quantities, sim, from, direction)
-streaming{T, I}(
-    streamer::Streaming, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I
-) = streaming{T, I}(streamer, sim, from, direction)
+
+
 # Normal streaming from fluid to fluid
+streaming{T, I}(
+    streamer::FluidStreaming, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), to::(I...), direction::I
+) = streaming(streamer, from, to, direction)
 function streaming{T, I}(
     ::FluidStreaming, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I)
 
     @assert(length(from) == length(to))
     sim.next_populations[direction, to...] = sim.populations[direction, from...]
 end
+
 # Half-way bounce back streaming
+streaming{T, I}(
+    streamer::HalfWayBounceBack, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), to::(I...), direction::I
+) = streaming(streamer, sim, from, direction)
 function streaming{T, I}(::HalfWayBounceBack, sim::Simulation{T, I}, from::(I...), direction::I)
     const invdir = sim.lattice.inversion[direction]
     sim.next_populations[invdir, from...] = sim.populations[direction, from...]
@@ -102,6 +101,10 @@ type ParabolicVelocityIOlet{T} <: VelocityIOlet
     end
 end
 
+streaming{T, I}(
+    streamer::VelocityIOlet, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
+    from::(I...), to::(I...), direction::I
+) = streaming(streamer, sim, from, to, direction)
 function streaming{T, I}(
         streamer::VelocityIOlet, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I)
     const bb_direction = sim.lattice.inversion[direction]
@@ -114,14 +117,13 @@ function streaming{T, I}(
 end
 
 # Time-independent parabolic inlet
+velocity(iolet::ParabolicVelocityIOlet, position, time) = velocity(iolet, position)
 function velocity(iolet::ParabolicVelocityIOlet, position)
     const centered = position - iolet.center
     const z = dot(centered, iolet.normal)
     const radial = (dot(centered, centered) - z * z) / iolet.radius / iolet.radius
     ((1 - radial) * iolet.maxspeed) * iolet.normal
 end
-# Overload for time-independent inlets
-velocity(iolet::VelocityIOlet, position, time) = velocity(iolet, position)
 
 
 abstract PressureIOlet{T} <: IOLetStreaming
@@ -139,7 +141,7 @@ end
 
 streaming{T, I}(
     iolet::NashZeroOrderPressure, quantitie::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), direction::I
+    from::(I...), to::(I...), direction::I
 ) = streaming(iolet, quantities.velocity, sim, from, direction)
 function streaming{T, I}(
     iolet::NashZeroOrderPressure, velocity::Vector{T}, sim::Simulation{T, I},
@@ -154,13 +156,14 @@ end
 
 local_kernel(kernel::NullKernel, args...; kargs...) = nothing
 function local_kernel{T, I}(kernel::FluidKernel, sim::Simulation{T, I}, indices::Vector{I})
-    const from = indexing(sim.indexing, indices)
-    const quantities = LocalQuantities(indices, sim.population[:, from], sim.lattice)
-    sim.populations[:, from] = collision(kernel.collision, sim.population[:, from], quantities.feq)
+    const from = tuple(index(sim.indexing, indices)...)
+    const quantities = LocalQuantities{T, I}(indices, sim.populations[:, from...], sim.lattice)
+    sim.populations[:, from...] = collision(
+        kernel.collision, sim.populations[:, from...], quantities.feq)
     for direction in 1:length(sim.lattice.weights)
-      const to_v = index(sim.indexing, indices + sim.lattice.celerities[direction])
-      const to = to_v...
-      const link = all(to_v .== 0) ? playground.NOTHING: sim.playground[to]
+      const to_v = index(sim.indexing, indices + sim.lattice.celerities[:, direction])
+      const to = tuple(to_v...)
+      const link = all(to_v .== 0) ? playground.NOTHING: sim.playground[to...]
       const streamer = get(kernel.streamers, link, NULLSTREAMER)
       streaming(streamer, quantities, sim, from, to, direction)
     end
