@@ -19,6 +19,8 @@ velocity(fᵢ::Vector, cᵢ::Matrix) = velocity(fᵢ, cᵢ, density(fᵢ))
 =#
 function equilibrium{T, I}(ρ::T, momentum::Vector{T}, celerities::Matrix{I}, weights::Vector{T})
     # computes momentum projected on each particle celerity first
+    @assert length(momentum) == size(celerities, 1)
+    @assert length(weights) == size(celerities, 2)
     μ_on_ē = celerities.'momentum
     weights .* (
         ρ
@@ -32,6 +34,8 @@ equilibrium{T, I}(lattice::Lattice{T, I}, fᵢ::Vector{T}) =
 
 equilibrium{T}(lattice::Lattice, ρ::T, momentum::Vector{T}) =
     equilibrium(ρ, momentum, lattice.celerities, lattice.weights)
+equilibrium{T}(lattice::Symbol, ρ::T, momentum::Vector{T}) =
+    equilibrium(getfield(LatticeBoltzmann, lattice), ρ, momentum)
 
 immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
     from::Vector{I}

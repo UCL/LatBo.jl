@@ -11,6 +11,8 @@ abstract LocalKernel <: Kernel
 abstract Collision <: Kernel
 # Base type for all collision kernels
 abstract Streaming <: Kernel
+# Base type for all initilizers
+abstract Initializer <: Kernel
 
 type FluidKernel <: LocalKernel
     # Collision kernel type and data
@@ -41,4 +43,14 @@ function local_kernel{T, I}(kernel::FluidKernel, sim::Simulation{T, I}, indices:
     end
 end
 
+
+type Homogeneous{T <: FloatingPoint} <: Initializer
+    density::T
+    momentum::Vector{T}
+end
+
+function initialize{T, I}(init::Homogeneous{T}, sim::Simulation{T, I}, indices::Vector{I})
+    const from = tuple(index(sim.indexing, indices)...)
+    sim.populations[:, from...] = equilibrium(sim.lattice, init.density, init.momentum)
+end
 end

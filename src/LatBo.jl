@@ -15,6 +15,8 @@ type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
     indexing::Indices.Indexing
     # Local kernels for each lattice type
     kernels :: Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}
+    # Initializes the populations
+    initializers :: Dict{Playground.Feature, LatticeBoltzmann.Initializer}
     # Current population
     populations :: Array{T}
     # Next population
@@ -36,19 +38,22 @@ function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Int
         return default
     end
 
-    simground = getarg(:playground, zeros(Playground.Feature, dimensions...))
-    if :playground ∉ kwargs
-        simground[:] = Playground.FLUID
+    initializers = getarg(:initializers, Dict{Playground.Feature, LatticeBoltzmann.Initializer}())
+    if :ρ₀ ∈ kwargs && :μ₀ ∈ kwargs
+        initializers[Playground.FLUID] =
+            LatticeBoltzmann.Homogeneous(getarg(:ρ₀, 0), getarg(:μ₀, 0))
     end
+
     const n = length(lattice.weights)
     SandBox{T, I}(
-      lattice::LatticeBoltzmann.Lattice{T, I},
-      Indices.Cartesian(T[dimensions...]),
-      getarg(:kernels, Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}()),
-      getarg(:population, zeros(T, tuple(n, dimensions...))),
-      getarg(:next_population, zeros(T, tuple(n, dimensions...))),
-      simground,
-      getarg(:time, 0)
+        lattice::LatticeBoltzmann.Lattice{T, I},
+        Indices.Cartesian(T[dimensions...]),
+        getarg(:kernels, Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}()),
+        initializers,
+        getarg(:population, zeros(T, tuple(n, dimensions...))),
+        getarg(:next_population, zeros(T, tuple(n, dimensions...))),
+        getarg(:playground, Playground.FLUID * ones(Playground.Feature, dimensions...)),
+        getarg(:time, 0)
     )
 end
 function SandBox(lattice::Symbol, args...; kwargs...)
