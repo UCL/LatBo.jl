@@ -1,49 +1,32 @@
 module LatBo
 
-export geometry, playground, LatticeBoltzmann, SingleRelaxationTime, D2Q9,
-    D3Q19, thermodynamics, collision, lattice_loop, integer_calc,
-    noslip_boundary, run_lb, kernel
-
-# Base type for all kernally stuff
-abstract Kernel
-# Local kernel for each lattice type
-abstract LocalKernel <: Kernel
-# Base type for all indexing kernels
-abstract Indexing <: Kernel
-# Base type for all collision kernels
-abstract Collision <: Kernel
-# Base type for all collision kernels
-abstract Streaming <: Kernel
 # Type defining the feature of the simulation playground
-typealias Feature Uint8
+abstract Simulation{T <: FloatingPoint, I <: Int}
 
-include("lattice.jl")
+include("indexing.jl")
+include("playground.jl")
+include("geometry.jl")
+include("lb/lb.jl")
 
-type Simulation{T <: Real, I <: Int}
+type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
     # Lattice on which the kernel acts
-    lattice::Lattice{T, I}
+    lattice::LatticeBoltzmann.Lattice{T, I}
     # indexing kernel
-    indexing::Indexing
+    indexing::Indices.Indexing
     # Local kernels for each lattice type
-    kernels :: Dict{Feature, LocalKernel}
+    kernels :: Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}
     # Current population
     populations :: Array{T}
     # Next population
     next_populations :: Array{T}
     # Describe where flow takes place
-    playground :: Array{Feature}
+    playground :: Array{Playground.Feature}
     # Current time step
     time::T
 end
 
-
-include("geometry.jl")
-include("playground.jl")
-include("thermodynamics.jl")
-include("kernel.jl")
-
 # Simple constructor for simulation structure
-function Simulation{T, I}(lattice::Lattice{T, I}, dimensions::(Int...);kwargs...)
+function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Int...); kwargs...)
     function getarg(k::Symbol, default)
         for (key, value) in kwargs
             if key == k
@@ -53,20 +36,24 @@ function Simulation{T, I}(lattice::Lattice{T, I}, dimensions::(Int...);kwargs...
         return default
     end
 
-    simground = getarg(:playground, zeros(Feature, dimensions...))
+    simground = getarg(:playground, zeros(Playground.Feature, dimensions...))
     if :playground ∉ kwargs
-        simground[:] = playground.FLUID
+        simground[:] = Playground.FLUID
     end
     const n = length(lattice.weights)
-    Simulation{T, I}(
-      lattice,
-      lb.Cartesian(T[u for u in dimensions]),
-      getarg(:kernels, Dict{Feature, LocalKernel}()),
+    SandBox{T, I}(
+      lattice::LatticeBoltzmann.Lattice{T, I},
+      Indices.Cartesian(T[dimensions...]),
+      getarg(:kernels, Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}()),
       getarg(:population, zeros(T, tuple(n, dimensions...))),
       getarg(:next_population, zeros(T, tuple(n, dimensions...))),
       simground,
       getarg(:time, 0)
     )
+end
+function SandBox(lattice::Symbol, args...; kwargs...)
+    lattice = getfield(LatticeBoltzmann, lattice)::LatticeBoltzmann.Lattice
+    SandBox(lattice, args...; kwargs...)
 end
 #= include("single_relaxation_time.jl") =#
 #= include("collision.jl") =#

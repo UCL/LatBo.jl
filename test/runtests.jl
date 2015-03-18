@@ -1,21 +1,13 @@
 module LatBoTests
-using LatBo
-using FactCheck
+using FactCheck: facts, context, @fact, not, roughly, exitstatus, exactly
 
-include("thermodynamics.jl")
-include("lattice.jl")
-include("kernel.jl")
 include("geometry.jl")
-FactCheck.exitstatus()
-#= @runtest LatBo playground =#
-#= @runtest LatBo initialization =#
-#= @runtest LatBo collision =#
-#= @runtest LatBo integer_calc =#
-#= @runtest LatBo lattice_loop =#
-#= @runtest LatBo zou_he_boundary =#
-#= @runtest LatBo initial_probability =#
-#= @runtest LatBo noslipboundary =#
-#= @runtest LatBo one_step =#
-#= @runtest LatBo plot_frame =#
-#= @runtest LatBo plot_vectors =#
+include("indexing.jl")
+include("lb/lattice.jl")
+include("lb/thermodynamics.jl")
+include("lb/collision.jl")
+include("lb/streaming.jl")
+include("lb/iolet.jl")
+include("lb/local_kernel.jl")
+exitstatus()
 end

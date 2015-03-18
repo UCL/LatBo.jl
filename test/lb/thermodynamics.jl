@@ -1,32 +1,30 @@
-using FactCheck: facts, @fact, roughly
-using LatBo: thermodynamics, D2Q9, D3Q19
-using LatBo.thermodynamics: equilibrium
+using LatBo.LatticeBoltzmann: velocity, momentum, density, equilibrium, D2Q9, D3Q19, LocalQuantities
 
-facts("Verify thermodynamic quantities") do
+facts("Thermodynamic quantities and functions") do
     for lattice_name in [:D2Q9, :D3Q19]
         context("for $(lattice_name)") do
             lattice = eval(lattice_name)
             ncomponents = size(lattice.celerities, 2)
 
             context("rho is a geometric series") do
-                @fact thermodynamics.density(Float64[1:9...]) => roughly(10*9/2)
-                @fact thermodynamics.density(Float64[1:10...]) => roughly(10*11/2)
+                @fact density(Float64[1:9...]) => roughly(10*9/2)
+                @fact density(Float64[1:10...]) => roughly(10*11/2)
             end
 
             context("homogeneous populations sum to zero momentum") do
                 fᵢ = ones(Float64, ncomponents)
-                @fact thermodynamics.momentum(fᵢ, lattice.celerities) .== 0 => all
+                @fact momentum(fᵢ, lattice.celerities) .== 0 => all
                 fᵢ[1] = 3 # This is the zero momentum component
-                @fact thermodynamics.momentum(fᵢ, lattice.celerities) .== 0 => all
+                @fact momentum(fᵢ, lattice.celerities) .== 0 => all
                 fᵢ[2] = 2 # Now for a negative test
-                @fact thermodynamics.momentum(fᵢ, lattice.celerities) .!= 0 => any
+                @fact momentum(fᵢ, lattice.celerities) .!= 0 => any
             end
 
             context("velocity from momentum and density ") do
                 fᵢ = convert(Array{Float64}, 1.0 + rand(ncomponents))
-                actual = thermodynamics.velocity(fᵢ, lattice.celerities, 1.)
-                half = thermodynamics.velocity(fᵢ, lattice.celerities, 0.5)
-                μ = thermodynamics.momentum(fᵢ, lattice.celerities)
+                actual = velocity(fᵢ, lattice.celerities, 1.)
+                half = velocity(fᵢ, lattice.celerities, 0.5)
+                μ = momentum(fᵢ, lattice.celerities)
                 @fact actual => roughly(half * 0.5)
                 @fact actual => roughly(μ)
             end
@@ -47,12 +45,12 @@ facts("Verify thermodynamic quantities") do
             context("local quantities aggregator") do
                from = Int64[1, 2, 3]
                fᵢ = convert(Array{Float64}, 1.0 + rand(Float64, ncomponents))
-               μ = thermodynamics.momentum(fᵢ, lattice.celerities)
-               ν = thermodynamics.velocity(fᵢ, lattice.celerities)
-               ρ = thermodynamics.density(fᵢ)
-               feq = thermodynamics.equilibrium(lattice, ρ, μ)
+               μ = momentum(fᵢ, lattice.celerities)
+               ν = velocity(fᵢ, lattice.celerities)
+               ρ = density(fᵢ)
+               feq = equilibrium(lattice, ρ, μ)
 
-               quants = thermodynamics.LocalQuantities{Float64, Int64}(from, fᵢ, lattice)
+               quants = LocalQuantities{Float64, Int64}(from, fᵢ, lattice)
                @fact quants.from => from
                @fact quants.density => roughly(ρ)
                @fact quants.momentum => roughly(μ)

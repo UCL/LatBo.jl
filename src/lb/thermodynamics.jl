@@ -1,6 +1,3 @@
-module thermodynamics
-using ..Lattice
-
 # Density at a given lattice site
 density(fᵢ::Vector) = sum(fᵢ)
 # Momentum at given site
@@ -36,7 +33,7 @@ equilibrium{T, I}(lattice::Lattice{T, I}, fᵢ::Vector{T}) =
 equilibrium{T}(lattice::Lattice, ρ::T, momentum::Vector{T}) =
     equilibrium(ρ, momentum, lattice.celerities, lattice.weights)
 
-immutable type LocalQuantities{T <: Real, I <: Int}
+immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
     from::Vector{I}
     density::T
     momentum::Vector{T}
@@ -44,13 +41,10 @@ immutable type LocalQuantities{T <: Real, I <: Int}
     feq::Vector{T}
 
     function LocalQuantities(from::Vector{I}, fᵢ::Vector{T}, lattice::Lattice{T, I})
-        const ρ = thermodynamics.density(fᵢ)
-        const μ = thermodynamics.momentum(fᵢ, lattice.celerities)
-        const ν = thermodynamics.velocity(μ, ρ)
-        const feq = thermodynamics.equilibrium(ρ, μ, lattice.celerities, lattice.weights)
+        const ρ = density(fᵢ)
+        const μ = momentum(fᵢ, lattice.celerities)
+        const ν = velocity(μ, ρ)
+        const feq = equilibrium(ρ, μ, lattice.celerities, lattice.weights)
         new(from, ρ, μ, ν, feq)
     end
-end
-
-
 end
