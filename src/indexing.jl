@@ -39,23 +39,4 @@ function gridcoords(kernel::Indexing, index::Integer)
     result
 end
 
-#= spatial_loop(local_function::Function, sim::Simulation) = =#
-#=     spatial_loop(local_function, sim.indexing, sim) =#
-#=  =#
-#= spatial_loop(local_function::Function, indexing::Cartesian, sim::Simulation) = =#
-#=     spatial_loop(local_function, indexing.dimensions, sim) =#
-#= spatial_loop(local_function::Function, indexing::Periodic, sim::Simulation) = =#
-#=     spatial_loop(local_function, indexing.dimensions, sim) =#
-#=  =#
-#= function spatial_loop(local_function::Function, dimensions::(Integer...), sim::Simulation, =#
-#=     selector::Symbol) =#
-#=     if length(dimensions) == 3 =#
-#=         for i in 1:dimensions[1], j in 1:dimensions[2] =#
-#=             local_function() =#
-#=         end =#
-#=     else =#
-#=         for i in 1:dimensions[1], j in 1:dimensions[2], k in 1:dimensions[3] =#
-#=         end =#
-#=     end =#
-#= end =#
 end

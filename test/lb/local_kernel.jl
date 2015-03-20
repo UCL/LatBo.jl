@@ -1,10 +1,11 @@
 using LatBo: SandBox, Simulation
 using LatBo.Playground: Feature
-using LatBo.LatticeBoltzmann: Streaming, Collision, FluidKernel, local_kernel
+using LatBo.LatticeBoltzmann: Streaming, Collision, FluidKernel, LocalKernel
 # the following functions are extended for mock types
 import LatBo.LatticeBoltzmann.velocity
 import LatBo.LatticeBoltzmann.collision
 import LatBo.LatticeBoltzmann.streaming
+import LatBo.LatticeBoltzmann.local_kernel
 
 
 type MockCollision <: Collision
@@ -27,6 +28,13 @@ function streaming(
         from::Integer, to::Integer, direction::Integer)
     push!(streamer.args, tuple(deepcopy(quantities), sim, from, to, direction))
 end
+
+type MockKernel <: LocalKernel
+    value
+end
+
+local_kernel(kernel::MockKernel, sim::Simulation, site::Integer) =
+    (sim.populations[:, site] = kernel.value)
 
 facts("Local fluid kernel") do
     sim = SandBox(:D2Q9, (4, 4))
@@ -71,5 +79,17 @@ facts("Local fluid kernel") do
         @fact kernel.streamers[9].args[1][2] => exactly(sim)
         zerodir = findfirst([all(cᵢ[:, i] .== 0) for i in 1:size(cᵢ, 2)])
         @fact kernel.streamers[9].args[1][3:end] => (start, start, zerodir)
+    end
+
+    context("Loop over all sites") do
+        sim.playground[:] = 1
+        sim.playground[5] = 2
+        sim.kernels = {1 => MockKernel(0), 2 => MockKernel(1)}
+
+        sim.populations[:] = -1
+        local_kernel(sim)
+
+        @fact any(sim.populations == -1) => false
+        @fact sim.populations[:, 5] => roughly(ones(sim.populations[:, 1]))
     end
 end

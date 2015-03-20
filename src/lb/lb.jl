@@ -49,10 +49,28 @@ type Homogeneous{T <: FloatingPoint} <: Initializer
     density::T
     momentum::Vector{T}
 end
+type NullInitializer <: Initializer; end
+const NULLINITIALIZER = NullInitializer()
 
 function initialize(init::Homogeneous, sim::Simulation, index::Integer)
     sim.populations[:, index] = equilibrium(sim.lattice, init.density, init.momentum)
 end
 initialize(init::Homogeneous, sim::Simulation, coords::GridCoords) =
     initialize(init, sim, index(sim.indexing, coords))
+initialize(::NullInitializer, sim::Simulation, index::Integer) = nothing
+
+
+# Both initialize and local_kernel can be used within loops over all sites
+# So run them both together
+for (name, dictionary) in [(:initialize, :initializers), (:local_kernel, :kernels)]
+    @eval begin
+        function $name(sim::Simulation)
+            dic = sim.$dictionary
+            for (site, feature) in enumerate(sim.playground)
+                $name(get(dic, feature, NULLINITIALIZER), sim, site)
+            end
+        end
+    end
+end
+
 end
