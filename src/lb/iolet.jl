@@ -18,19 +18,19 @@ type ParabolicVelocityIOlet{T} <: VelocityIOlet
     end
 end
 
-streaming{T, I}(
-    streamer::VelocityIOlet, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I
+streaming(
+    streamer::VelocityIOlet, quantities::LocalQuantities, sim::Simulation,
+    from::Integer, to::Integer, direction::Integer
 ) = streaming(streamer, sim, from, to, direction)
-function streaming{T, I}(
-        streamer::VelocityIOlet, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I)
+function streaming(
+        streamer::VelocityIOlet, sim::Simulation, from::Integer, to::Integer, direction::Integer)
     const bb_direction = sim.lattice.inversion[direction]
     const cᵢ = sim.lattice.celerities[:, direction]
     const wᵢ = sim.lattice.weights[direction]
-    const halfway = T[from...] + 0.5cᵢ
+    const halfway = gridcoords(sim.indexing, from) + 0.5cᵢ
     const μ = velocity(streamer, halfway, sim.time)
     const correction = 2wᵢ * dot(cᵢ, μ) / speed_of_sound_squared
-    sim.next_populations[bb_direction, from...] = sim.populations[direction, from...] - correction
+    sim.next_populations[bb_direction, from] = sim.populations[direction, from] - correction
 end
 
 # Time-independent parabolic inlet
@@ -56,17 +56,17 @@ type NashZeroOrderPressure{T} <: IOLetStreaming
     end
 end
 
-streaming{T, I}(
-    iolet::NashZeroOrderPressure, quantitie::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I
+streaming(
+    iolet::NashZeroOrderPressure, quantitie::LocalQuantities, sim::Simulation,
+    from::Integer, to::Integer, direction::Integer
 ) = streaming(iolet, quantities.velocity, sim, from, direction)
-function streaming{T, I}(
-    iolet::NashZeroOrderPressure, velocity::Vector{T}, sim::Simulation{T, I},
-    from::(I...), direction::I)
+function streaming(
+        iolet::NashZeroOrderPressure, velocity::Vector, sim::Simulation,
+        from::Integer, direction::Integer)
     const invdir = sim.lattice.inversion[direction]
     const iolet_μ = iolet.density * dot(iolet.normal, velocity) * iolet.normal
     const cᵢ = sim.lattice.celerities[:, invdir:invdir]
     const wᵢ = sim.lattice.weights[invdir:invdir]
     const feq = equilibrium(iolet.density, iolet_μ, cᵢ, wᵢ)[1]
-    sim.next_populations[invdir, from...] = feq
+    sim.next_populations[invdir, from] = feq
 end

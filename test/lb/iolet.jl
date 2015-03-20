@@ -22,15 +22,15 @@ facts("Inlets and Outlets") do
             const cᵢ = sim.lattice.celerities
             const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
             const invdir = find([all(cᵢ[:, i] .== [1, -1]) for i in 1:size(cᵢ, 2)])[1]
-            const start = (3, 3)
-            const finish = (2, 4)
-            const halfway = Float64[start...] + 0.5*Float64[-1, 1]
+            const start = index(sim.indexing, (3, 3))
+            const finish = index(sim.indexing, (2, 4))
+            const halfway = Float64[3, 3] + 0.5*Float64[-1, 1]
             sim.time = 40.0
 
             sim.populations[:] = 0
             sim.next_populations[:] = 0
             @fact sim.lattice.inversion[direction] => invdir
-            sim.populations[direction, start...] = 1
+            sim.populations[direction, start] = 1
             @fact sim.next_populations .== 0 => all
 
             # perform streaming
@@ -41,9 +41,9 @@ facts("Inlets and Outlets") do
             @fact iolet.time => roughly(sim.time)
             # 20 is the celerity * momentum
             expected = 2sim.lattice.weights[direction] / speed_of_sound_squared * 20
-            @fact sim.next_populations[invdir, start...] => roughly(1 - expected)
+            @fact sim.next_populations[invdir, start] => roughly(1 - expected)
             @fact sum(abs(sim.next_populations)) => roughly(abs(1 - expected))
-            @fact sim.populations[direction, start...] => roughly(1)
+            @fact sim.populations[direction, start] => roughly(1)
             @fact sum(abs(sim.populations)) => roughly(1)
         end
 
@@ -77,7 +77,7 @@ facts("Inlets and Outlets") do
         const cᵢ = sim.lattice.celerities
         const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
         const invdir = find([all(cᵢ[:, i] .== [1, -1]) for i in 1:size(cᵢ, 2)])[1]
-        const start = (3, 3)
+        const start = index(sim.indexing, (3, 3))
         const ν₀ = 5n₀ + 6n₁
 
         iolet = NashZeroOrderPressure{Float64}(n₀, ρ)
@@ -87,14 +87,14 @@ facts("Inlets and Outlets") do
         feq = equilibrium(ρ, μ, sim.lattice.celerities, sim.lattice.weights)
 
         streaming(iolet, ν₀, sim, start, direction)
-        @fact sim.next_populations[invdir, start...] => roughly(feq[invdir])
-        @fact sum(abs(sim.next_populations[invdir, start...])) => roughly(feq[invdir])
+        @fact sim.next_populations[invdir, start] => roughly(feq[invdir])
+        @fact sum(abs(sim.next_populations[invdir, start])) => roughly(feq[invdir])
 
         # original population has no effect
         sim.populations = 1.0 + rand(Float64, size(sim.populations))
         streaming(iolet, ν₀, sim, start, direction)
-        @fact sim.next_populations[invdir, start...] => roughly(feq[invdir])
-        @fact sum(abs(sim.next_populations[invdir, start...])) => roughly(feq[invdir])
+        @fact sim.next_populations[invdir, start] => roughly(feq[invdir])
+        @fact sum(abs(sim.next_populations[invdir, start])) => roughly(feq[invdir])
     end
 end
 

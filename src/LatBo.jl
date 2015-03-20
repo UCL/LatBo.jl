@@ -28,7 +28,7 @@ type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
 end
 
 # Simple constructor for simulation structure
-function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Int...); kwargs...)
+function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Integer...); kwargs...)
     function getarg(k::Symbol, default)
         for (key, value) in kwargs
             if key == k
@@ -47,7 +47,7 @@ function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Int
     const n = length(lattice.weights)
     SandBox{T, I}(
         lattice::LatticeBoltzmann.Lattice{T, I},
-        Indices.Cartesian(T[dimensions...]),
+        Indices.Cartesian(I[dimensions...]),
         getarg(:kernels, Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}()),
         initializers,
         getarg(:population, zeros(T, tuple(n, dimensions...))),

@@ -10,24 +10,27 @@ const NULLSTREAMER = NullStreaming()
 streaming(::NullStreaming, args...) = nothing
 
 
+# Overload to make unit-testing a bit easier
+streaming(
+    streamer::Streaming, quant::LocalQuantities, sim::Simulation,
+    from::GridCoords, to::GridCoords, direction::Integer
+) = streaming(streamer, quant, indexing(sim.indexing, from), indexing(sim.indexing, to), direction)
 # Normal streaming from fluid to fluid
-streaming{T, I}(
-    streamer::FluidStreaming, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I
+streaming(
+    streamer::FluidStreaming, quantities::LocalQuantities, sim::Simulation,
+    from::Integer, to::Integer, direction::Integer
 ) = streaming(streamer, from, to, direction)
-function streaming{T, I}(
-    ::FluidStreaming, sim::Simulation{T, I}, from::(I...), to::(I...), direction::I)
-
+function streaming(::FluidStreaming, sim::Simulation, from::Integer, to::Integer, dir::Integer)
     @assert(length(from) == length(to))
-    sim.next_populations[direction, to...] = sim.populations[direction, from...]
+    sim.next_populations[dir, to] = sim.populations[dir, from]
 end
 
 # Half-way bounce back streaming
-streaming{T, I}(
-    streamer::HalfWayBounceBack, quantities::LocalQuantities{T, I}, sim::Simulation{T, I},
-    from::(I...), to::(I...), direction::I
+streaming(
+    streamer::HalfWayBounceBack, quantities::LocalQuantities, sim::Simulation,
+    from::Integer, to::Integer, direction::Integer
 ) = streaming(streamer, sim, from, direction)
-function streaming{T, I}(::HalfWayBounceBack, sim::Simulation{T, I}, from::(I...), direction::I)
+function streaming(::HalfWayBounceBack, sim::Simulation, from::Integer, direction::Integer)
     const invdir = sim.lattice.inversion[direction]
-    sim.next_populations[invdir, from...] = sim.populations[direction, from...]
+    sim.next_populations[invdir, from] = sim.populations[direction, from]
 end

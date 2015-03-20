@@ -14,7 +14,7 @@ facts("Initialization") do
         initializer = Homogeneous(ρ₀, μ₀)
         sim.populations[:] = 0
         initialize(initializer, sim, start)
-        @fact sim.populations[:, start...] => roughly(feq)
+        @fact sim.populations[:, index(sim.indexing, start)] => roughly(feq)
         @fact sum(abs(sim.populations)) => roughly(sum(abs(feq)))
     end
 end

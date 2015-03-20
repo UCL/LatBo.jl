@@ -1,7 +1,9 @@
 module LatticeBoltzmann
 using ..Simulation
 using ..Playground.Feature
+using ..Indices.GridCoords
 using ..Indices.index
+using ..Indices.gridcoords
 
 # Base type for all kernally stuff
 abstract Kernel
@@ -29,17 +31,16 @@ include("streaming.jl")
 include("iolet.jl")
 
 local_kernel(kernel::NullKernel, args...; kargs...) = nothing
-function local_kernel{T, I}(kernel::FluidKernel, sim::Simulation{T, I}, indices::Vector{I})
-    const from = tuple(index(sim.indexing, indices)...)
-    const quantities = LocalQuantities{T, I}(indices, sim.populations[:, from...], sim.lattice)
-    sim.populations[:, from...] = collision(
-        kernel.collision, sim.populations[:, from...], quantities.feq)
+function local_kernel(kernel::FluidKernel, sim::Simulation, site::Integer)
+    const from = gridcoords(sim.indexing, site)
+    const quantities = LocalQuantities(
+        typeof(sim).parameters, from, sim.populations[:, site], sim.lattice)
+    sim.populations[:, site] = collision(kernel.collision, sim.populations[:, site], quantities.feq)
     for direction in 1:length(sim.lattice.weights)
-      const to_v = index(sim.indexing, indices + sim.lattice.celerities[:, direction])
-      const to = tuple(to_v...)
-      const link = all(to_v .== 0) ? playground.NOTHING: sim.playground[to...]
-      const streamer = get(kernel.streamers, link, NULLSTREAMER)
-      streaming(streamer, quantities, sim, from, to, direction)
+        const to = index(sim.indexing, from + sim.lattice.celerities[:, direction])
+        const link = to == 0 ? playground.NOTHING: sim.playground[to]
+        const streamer = get(kernel.streamers, link, NULLSTREAMER)
+        streaming(streamer, quantities, sim, site, to, direction)
     end
 end
 
@@ -49,8 +50,9 @@ type Homogeneous{T <: FloatingPoint} <: Initializer
     momentum::Vector{T}
 end
 
-function initialize{T, I}(init::Homogeneous{T}, sim::Simulation{T, I}, indices::Vector{I})
-    const from = tuple(index(sim.indexing, indices)...)
-    sim.populations[:, from...] = equilibrium(sim.lattice, init.density, init.momentum)
+function initialize(init::Homogeneous, sim::Simulation, index::Integer)
+    sim.populations[:, index] = equilibrium(sim.lattice, init.density, init.momentum)
 end
+initialize(init::Homogeneous, sim::Simulation, coords::GridCoords) =
+    initialize(init, sim, index(sim.indexing, coords))
 end

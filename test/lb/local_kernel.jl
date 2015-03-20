@@ -1,4 +1,4 @@
-using LatBo: SandBox
+using LatBo: SandBox, Simulation
 using LatBo.Playground: Feature
 using LatBo.LatticeBoltzmann: Streaming, Collision, FluidKernel, local_kernel
 # the following functions are extended for mock types
@@ -22,17 +22,19 @@ type MockStreaming <: Streaming
     args :: Vector{Any}
     MockStreaming() = new(Any[])
 end
-function streaming(streamer::MockStreaming, quantities, sim, from, to, direction)
+function streaming(
+        streamer::MockStreaming, quantities::LocalQuantities, sim::Simulation,
+        from::Integer, to::Integer, direction::Integer)
     push!(streamer.args, tuple(deepcopy(quantities), sim, from, to, direction))
 end
 
 facts("Local fluid kernel") do
     sim = SandBox(:D2Q9, (4, 4))
 
-    const start = [3, 3]
+    const start = index(sim.indexing, [3, 3])
     const cᵢ = sim.lattice.celerities
     const direction = find([all(cᵢ[:, i] .== [-1, 1]) for i in 1:size(cᵢ, 2)])[1]
-    const finish = start + cᵢ[:, direction]
+    const finish = index(sim.indexing, [3, 3] + cᵢ[:, direction])
 
     kernel = FluidKernel(
         MockCollision(),
@@ -43,11 +45,11 @@ facts("Local fluid kernel") do
         }
     )
     sim.playground[:] = 0
-    sim.playground[finish...] = 42
-    sim.playground[start...] = 9
+    sim.playground[finish]= 42
+    sim.playground[start] = 9
     const fᵢ = 1 + rand(Float64, size(sim.populations, 1))
     const feq = equilibrium(sim.lattice, fᵢ)
-    sim.populations[:, start...] = fᵢ
+    sim.populations[:, start] = fᵢ
 
     context("Check mock calls") do
 
@@ -64,14 +66,10 @@ facts("Local fluid kernel") do
 
         @fact kernel.streamers[42].args[1][2] => exactly(sim)
         @fact kernel.streamers[42].args[1][1].feq => roughly(feq)
-        @fact kernel.streamers[42].args[1][3] => tuple(start...)
-        @fact kernel.streamers[42].args[1][4] => tuple(finish...)
-        @fact kernel.streamers[42].args[1][5] => direction
+        @fact kernel.streamers[42].args[1][3:end] => (start, finish, direction)
 
         @fact kernel.streamers[9].args[1][2] => exactly(sim)
-        @fact kernel.streamers[9].args[1][3] => tuple(start...)
-        @fact kernel.streamers[9].args[1][4] => tuple(start...)
         zerodir = findfirst([all(cᵢ[:, i] .== 0) for i in 1:size(cᵢ, 2)])
-        @fact kernel.streamers[9].args[1][5] => zerodir
+        @fact kernel.streamers[9].args[1][3:end] => (start, start, zerodir)
     end
 end

@@ -38,17 +38,26 @@ equilibrium{T}(lattice::Symbol, ρ::T, momentum::Vector{T}) =
     equilibrium(getfield(LatticeBoltzmann, lattice), ρ, momentum)
 
 immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
-    from::Vector{I}
+    from::GridCoords{I}
     density::T
     momentum::Vector{T}
     velocity::Vector{T}
     feq::Vector{T}
 
-    function LocalQuantities(from::Vector{I}, fᵢ::Vector{T}, lattice::Lattice{T, I})
+    function LocalQuantities(from::GridCoords{I}, fᵢ::Vector{T}, lattice::Lattice{T, I})
         const ρ = density(fᵢ)
         const μ = momentum(fᵢ, lattice.celerities)
         const ν = velocity(μ, ρ)
         const feq = equilibrium(ρ, μ, lattice.celerities, lattice.weights)
         new(from, ρ, μ, ν, feq)
     end
+end
+
+# Convenience calls to specify types as arguments
+LocalQuantities{T <: FloatingPoint, I <: Integer}(::Type{T}, ::Type{I}, args...) =
+    LocalQuantities{T, I}(args...)
+function LocalQuantities(types::(Type, Type), args...)
+    @assert types[1] <: FloatingPoint
+    @assert types[2] <: Integer
+    LocalQuantities(types..., args...)
 end
