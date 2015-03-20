@@ -1,4 +1,4 @@
-using LatBo.LatticeBoltzmann: D2Q9, D3Q19
+using LatBo.LB: D2Q9, D3Q19
 
 facts("Lattice direction inversion") do
     for lattice_name in [:D2Q9, :D3Q19]

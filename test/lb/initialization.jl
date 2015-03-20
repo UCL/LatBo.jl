@@ -1,7 +1,7 @@
 using LatBo: Simulation, SandBox
 using LatBo.Indices: index
-using LatBo.LatticeBoltzmann: Homogeneous, equilibrium, Initializer
-import LatBo.LatticeBoltzmann.initialize
+using LatBo.LB: Homogeneous, equilibrium, Initializer
+import LatBo.LB.initialize
 
 type MockInitializer <: Initializer
     value

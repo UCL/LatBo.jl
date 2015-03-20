@@ -1,4 +1,4 @@
-using LatBo.LatticeBoltzmann: velocity, momentum, density, equilibrium, D2Q9, D3Q19, LocalQuantities
+using LatBo.LB: velocity, momentum, density, equilibrium, D2Q9, D3Q19, LocalQuantities
 
 facts("Thermodynamic quantities and functions") do
     for lattice_name in [:D2Q9, :D3Q19]

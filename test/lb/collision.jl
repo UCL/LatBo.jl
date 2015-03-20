@@ -1,4 +1,4 @@
-using LatBo.LatticeBoltzmann: collision
+using LatBo.LB: collision
 
 facts("Collision kernels") do
     context("Single relaxation time") do

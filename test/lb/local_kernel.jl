@@ -1,11 +1,11 @@
 using LatBo: SandBox, Simulation
 using LatBo.Playground: Feature
-using LatBo.LatticeBoltzmann: Streaming, Collision, FluidKernel, LocalKernel
+using LatBo.LB: Streaming, Collision, FluidKernel, LocalKernel
 # the following functions are extended for mock types
-import LatBo.LatticeBoltzmann.velocity
-import LatBo.LatticeBoltzmann.collision
-import LatBo.LatticeBoltzmann.streaming
-import LatBo.LatticeBoltzmann.local_kernel
+import LatBo.LB.velocity
+import LatBo.LB.collision
+import LatBo.LB.streaming
+import LatBo.LB.local_kernel
 
 
 type MockCollision <: Collision

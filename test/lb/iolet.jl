@@ -1,7 +1,7 @@
 using LatBo: SandBox
-using LatBo.LatticeBoltzmann: VelocityIOlet, ParabolicVelocityIOlet,
+using LatBo.LB: VelocityIOlet, ParabolicVelocityIOlet,
         equilibrium, NashZeroOrderPressure, streaming, speed_of_sound_squared
-import LatBo.LatticeBoltzmann: velocity
+import LatBo.LB: velocity
 
 type MockVelocityIOlet <: VelocityIOlet
     position::Vector{Float64}

@@ -1,4 +1,4 @@
-using LatBo.LatticeBoltzmann: HalfWayBounceBack, FluidStreaming, streaming
+using LatBo.LB: HalfWayBounceBack, FluidStreaming, streaming
 using LatBo: SandBox
 using LatBo.Indices: index
 facts("Streaming kernels") do

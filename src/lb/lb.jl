@@ -1,4 +1,4 @@
-module LatticeBoltzmann
+module LB
 using ..Simulation
 using ..Playground.Feature
 using ..Indices.GridCoords

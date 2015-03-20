@@ -35,7 +35,7 @@ equilibrium{T, I}(lattice::Lattice{T, I}, fᵢ::Vector{T}) =
 equilibrium{T}(lattice::Lattice, ρ::T, momentum::Vector{T}) =
     equilibrium(ρ, momentum, lattice.celerities, lattice.weights)
 equilibrium{T}(lattice::Symbol, ρ::T, momentum::Vector{T}) =
-    equilibrium(getfield(LatticeBoltzmann, lattice), ρ, momentum)
+    equilibrium(getfield(LB, lattice), ρ, momentum)
 
 immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
     from::GridCoords{I}

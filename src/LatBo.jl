@@ -10,13 +10,13 @@ include("lb/lb.jl")
 
 type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
     # Lattice on which the kernel acts
-    lattice::LatticeBoltzmann.Lattice{T, I}
+    lattice::LB.Lattice{T, I}
     # indexing kernel
     indexing::Indices.Indexing
     # Local kernels for each lattice type
-    kernels :: Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}
+    kernels :: Dict{Playground.Feature, LB.LocalKernel}
     # Initializes the populations
-    initializers :: Dict{Playground.Feature, LatticeBoltzmann.Initializer}
+    initializers :: Dict{Playground.Feature, LB.Initializer}
     # Current population
     populations :: Array{T}
     # Next population
@@ -28,7 +28,7 @@ type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
 end
 
 # Simple constructor for simulation structure
-function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Integer...); kwargs...)
+function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwargs...)
     function getarg(k::Symbol, default)
         for (key, value) in kwargs
             if key == k
@@ -38,17 +38,17 @@ function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Int
         return default
     end
 
-    initializers = getarg(:initializers, Dict{Playground.Feature, LatticeBoltzmann.Initializer}())
+    initializers = getarg(:initializers, Dict{Playground.Feature, LB.Initializer}())
     if :ρ₀ ∈ kwargs && :μ₀ ∈ kwargs
         initializers[Playground.FLUID] =
-            LatticeBoltzmann.Homogeneous(getarg(:ρ₀, 0), getarg(:μ₀, 0))
+            LB.Homogeneous(getarg(:ρ₀, 0), getarg(:μ₀, 0))
     end
 
     const n = length(lattice.weights)
     SandBox{T, I}(
-        lattice::LatticeBoltzmann.Lattice{T, I},
+        lattice::LB.Lattice{T, I},
         Indices.Cartesian(I[dimensions...]),
-        getarg(:kernels, Dict{Playground.Feature, LatticeBoltzmann.LocalKernel}()),
+        getarg(:kernels, Dict{Playground.Feature, LB.LocalKernel}()),
         initializers,
         getarg(:population, zeros(T, tuple(n, dimensions...))),
         getarg(:next_population, zeros(T, tuple(n, dimensions...))),
@@ -57,7 +57,7 @@ function SandBox{T, I}(lattice::LatticeBoltzmann.Lattice{T, I}, dimensions::(Int
     )
 end
 function SandBox(lattice::Symbol, args...; kwargs...)
-    lattice = getfield(LatticeBoltzmann, lattice)::LatticeBoltzmann.Lattice
+    lattice = getfield(LB, lattice)::LB.Lattice
     SandBox(lattice, args...; kwargs...)
 end
 
@@ -65,12 +65,12 @@ end
 function run!(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::Integer=1)
     # First initializes lattice
     if doinit
-        LatticeBoltzmann.initialize(sim)
+        LB.initialize(sim)
     end
     # Then run for N steps
     for step in 1:nsteps
         # run local kernel for each site
-        LatticeBoltzmann.local_kernel(sim)
+        LB.local_kernel(sim)
         # swap populations
         sim.populations, sim.next_populations = sim.next_populations, sim.populations
         # run observer at each step
