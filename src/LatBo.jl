@@ -62,7 +62,7 @@ function SandBox(lattice::Symbol, args...; kwargs...)
 end
 
 # Runs lattice boltzmann for single step
-function run(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::Integer=1)
+function run!(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::Integer=1)
     # First initializes lattice
     if doinit
         LatticeBoltzmann.initialize(sim)
@@ -79,6 +79,6 @@ function run(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::Int
 end
 
 # Run simulation for N numbers of steps without observing
-run(sim::Simulation; kwargs...) = run(()->nothing, sim; kwargs...)
+run!(sim::Simulation; kwargs...) = run(()->nothing, sim; kwargs...)
 
 end # module
