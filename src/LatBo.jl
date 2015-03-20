@@ -1,5 +1,7 @@
 module LatBo
 
+export SandBox, run!
+
 # Type defining the feature of the simulation playground
 abstract Simulation{T <: FloatingPoint, I <: Int}
 
