@@ -1,4 +1,4 @@
-type Lattice{T <: FloatingPoint, I <: Int}
+type Lattice{T <: Real, I <: Int}
     celerities::Matrix{I}
     weights::Vector{T}
     inversion::Vector{I}
