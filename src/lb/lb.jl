@@ -1,6 +1,7 @@
 module LB
 using ..Simulation
 using ..Playground.Feature
+using ..Playground.NOTHING
 using ..Indices.GridCoords
 using ..Indices.index
 using ..Indices.gridcoords
@@ -38,7 +39,7 @@ function local_kernel(kernel::FluidKernel, sim::Simulation, site::Integer)
     sim.populations[:, site] = collision(kernel.collision, sim.populations[:, site], quantities.feq)
     for direction in 1:length(sim.lattice.weights)
         const to = index(sim.indexing, from + sim.lattice.celerities[:, direction])
-        const link = to == 0 ? playground.NOTHING: sim.playground[to]
+        const link = to == 0 ? NOTHING: sim.playground[to]
         const streamer = get(kernel.streamers, link, NULLSTREAMER)
         streaming(streamer, quantities, sim, site, to, direction)
     end
