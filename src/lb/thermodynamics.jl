@@ -1,11 +1,31 @@
 # Density at a given lattice site
 density(fᵢ::Vector) = sum(fᵢ)
+function density(fᵢ::DenseArray)
+    shape = size(fᵢ)[2:end]
+    reshape([sum(fᵢ[:, i]) for i = 1:prod(shape)], shape)
+end
+density(sim::Simulation) = density(sim.populations)
 # Momentum at given site
 momentum(fᵢ::Vector, cᵢ::Matrix) = vec(sum(cᵢ .* transpose(fᵢ), 2))
 # Velocities at a given lattice site
 velocity(μ::Vector, ρ::Number) = μ / ρ
 velocity(fᵢ::Vector, cᵢ::Matrix, ρ::Number) = velocity(momentum(fᵢ, cᵢ), ρ)
 velocity(fᵢ::Vector, cᵢ::Matrix) = velocity(fᵢ, cᵢ, density(fᵢ))
+
+# Momentum and velocity functions that take the full grid, or a simulation object
+for name in [:momentum, :velocity]
+    @eval begin
+        function $name(fᵢ::DenseArray, cᵢ::Matrix)
+            const shape = tuple(size(cᵢ, 1), size(fᵢ)[2:end]...)
+            result = zeros(eltype(fᵢ), shape)
+            for i = 1:prod(shape[2:end])
+                result[1:shape[1], i] = $name(fᵢ[:, i], cᵢ)
+            end
+            result
+        end
+        $name(sim::Simulation) = $name(sim.populations, sim.lattice.celerities)
+    end
+end
 
 #= Computes the equilibrium particle distributions $f^{eq}$:
 
