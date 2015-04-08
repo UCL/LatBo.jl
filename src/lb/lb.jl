@@ -67,7 +67,9 @@ for (name, dictionary) in [(:initialize, :initializers), (:local_kernel, :kernel
         function $name(sim::Simulation)
             dic = sim.$dictionary
             for (site, feature) in enumerate(sim.playground)
-                $name(get(dic, feature, NULLINITIALIZER), sim, site)
+                if haskey(dic, feature)
+                    $name(dic[feature], sim, site)
+                end
             end
         end
     end
