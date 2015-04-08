@@ -26,7 +26,7 @@ type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
     # Describe where flow takes place
     playground :: Array{Playground.Feature}
     # Current time step
-    time::T
+    time::I
 end
 
 # Simple constructor for simulation structure
