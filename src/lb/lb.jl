@@ -36,7 +36,7 @@ function local_kernel(kernel::FluidKernel, sim::Simulation, site::Integer)
     const from = gridcoords(sim.indexing, site)
     const quantities = LocalQuantities(
         typeof(sim).parameters, from, sim.populations[:, site], sim.lattice)
-    sim.populations[:, site] = collision(kernel.collision, sim.populations[:, site], quantities.feq)
+    collision!(kernel.collision, sim.populations[:, site], quantities.feq)
     for direction in 1:length(sim.lattice.weights)
         const to = index(sim.indexing, from + sim.lattice.celerities[:, direction])
         const link = to == 0 ? NOTHING: sim.playground[to]
