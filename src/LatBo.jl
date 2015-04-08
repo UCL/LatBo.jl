@@ -81,6 +81,6 @@ function run!(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::In
 end
 
 # Run simulation for N numbers of steps without observing
-run!(sim::Simulation; kwargs...) = run(()->nothing, sim; kwargs...)
+run!(sim::Simulation; kwargs...) = run!(()->nothing, sim; kwargs...)
 
 end # module
