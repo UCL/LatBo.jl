@@ -41,7 +41,8 @@ function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwar
     end
 
     initializers = getarg(:initializers, Dict{Playground.Feature, LB.Initializer}())
-    if :ρ₀ ∈ kwargs && :μ₀ ∈ kwargs
+    keys = [k for (k, v) in kwargs]
+    if :ρ₀ ∈ keys && :μ₀ ∈ keys
         initializers[Playground.FLUID] =
             LB.Homogeneous(getarg(:ρ₀, 0), getarg(:μ₀, 0))
     end
