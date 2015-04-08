@@ -44,7 +44,7 @@ function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwar
     keys = [k for (k, v) in kwargs]
     if :ρ₀ ∈ keys && :μ₀ ∈ keys
         initializers[Playground.FLUID] =
-            LB.Homogeneous(getarg(:ρ₀, 0), getarg(:μ₀, 0))
+            LB.Homogeneous{T}(getarg(:ρ₀, 0), getarg(:μ₀, zeros(T, length(dimensions))))
     end
 
     const n = length(lattice.weights)
