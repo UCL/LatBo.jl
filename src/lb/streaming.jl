@@ -19,9 +19,8 @@ streaming(
 streaming(
     streamer::FluidStreaming, quantities::LocalQuantities, sim::Simulation,
     from::Integer, to::Integer, direction::Integer
-) = streaming(streamer, from, to, direction)
+) = streaming(streamer, sim, from, to, direction)
 function streaming(::FluidStreaming, sim::Simulation, from::Integer, to::Integer, dir::Integer)
-    @assert(length(from) == length(to))
     sim.next_populations[dir, to] = sim.populations[dir, from]
 end
 
