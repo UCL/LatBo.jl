@@ -57,7 +57,7 @@ type NashZeroOrderPressure{T} <: IOLetStreaming
 end
 
 streaming(
-    iolet::NashZeroOrderPressure, quantitie::LocalQuantities, sim::Simulation,
+    iolet::NashZeroOrderPressure, quantities::LocalQuantities, sim::Simulation,
     from::Integer, to::Integer, direction::Integer
 ) = streaming(iolet, quantities.velocity, sim, from, direction)
 function streaming(
