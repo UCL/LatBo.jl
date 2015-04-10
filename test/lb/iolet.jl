@@ -35,7 +35,7 @@ facts("Inlets and Outlets") do
 
             # perform streaming
             iolet = MockVelocityIOlet()
-            streaming(iolet, sim, start, finish, direction)
+            streaming(iolet, sim, start, direction)
 
             @fact iolet.position => roughly(Float64[2.5, 3.5])
             @fact iolet.time => roughly(sim.time)

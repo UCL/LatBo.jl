@@ -48,7 +48,7 @@ streaming(
     streamer::ConstantVelocityIOlet, quantities::LocalQuantities, sim::Simulation,
     from::Integer, to::Integer, direction::Integer
 ) = streaming(streamer, sim, from, direction)
-function streaming(iolet::VelocityIOlet, sim::Simulation, from::Integer, direction::Integer)
+function streaming(iolet::ConstantVelocityIOlet, sim::Simulation, from::Integer, direction::Integer)
     const bb_direction = sim.lattice.inversion[direction]
     const cᵢ = sim.lattice.celerities[:, direction]
     const wᵢ = sim.lattice.weights[direction]
