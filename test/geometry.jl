@@ -1,4 +1,3 @@
-using FactCheck: facts, context, @fact, not
 using LatBo.geometry: is_in_pipe, is_in_half_space, is_in_sphere
 
 facts("Check pipe geometries") do

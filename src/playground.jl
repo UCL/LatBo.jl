@@ -1,6 +1,6 @@
-module playground
+module Playground
 using Base: Cartesian
-using LatBo: LatticeBoltzmann
+typealias Feature Uint8
 
 # Enumerates possible features on the grid:
 # - FLUID: Site on which to perform standard lattice-boltzmann
@@ -8,12 +8,14 @@ using LatBo: LatticeBoltzmann
 # - INLET: input into the simulation domain
 # - OUTLET: output out of the simulation domain
 # - NOTHING: convenience value when constructing grid
-typealias Feature Uint8
-const NOTHING = convert(Feature, 0)
-const FLUID   = convert(Feature, 1)
-const SOLID   = convert(Feature, 2)
-const INLET   = convert(Feature, 3)
-const OUTLET  = convert(Feature, 4)
+# - NULL: means streaming to /dev/null
+const NOTHING = convert(Feature, 1)
+const FLUID   = convert(Feature, 2)
+const SOLID   = convert(Feature, 3)
+const INLET   = convert(Feature, 4)
+const OUTLET  = convert(Feature, 5)
+const NULL    = convert(Feature, 6)
+const NUMBER_OF_FEATURE_TYPES = convert(Feature, 6)
 
 for N = 2:3
     @eval begin
@@ -42,9 +44,4 @@ initialize(characterize::Function, dimensions) = initialize(
     zeros(Feature, dimensions)
 )
 
-initialize(characterize::Function, lb::LatticeBoltzmann) = initialize(
-    characterize,
-    lb.playground
-)
-
-end # module playground
+end

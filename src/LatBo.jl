@@ -1,78 +1,92 @@
 module LatBo
 
-export geometry, playground, LatticeBoltzmann, SingleRelaxationTime, D2Q9,
-    D3Q19, thermodynamics, collision, lattice_loop, integer_calc,
-	noslip_boundary, run_lb, open_outlet#, visualisation
+export SandBox, run!, geometry, index, gridcoords, LB, Playground
 
-abstract LatticeBoltzmann
+
+# Type defining the feature of the simulation playground
+abstract Simulation{T <: FloatingPoint, I <: Int}
+
+include("indexing.jl")
+include("playground.jl")
 
 include("geometry.jl")
-include("playground.jl")
-include("single_relaxation_time.jl")
-#include("plot_frame.jl")
-include("thermodynamics.jl")
-include("collision.jl")
-include("integer_calc.jl")
-include("kernel.jl")
-include("zou_he_boundary.jl")
-include("initial_probability.jl")
-include("noslip_boundary.jl")
-include("open_outlet.jl")
-#include("visualisation.jl")
+include("lb/lb.jl")
 
+importall .Indices
+using .LB
 
-# Runs lattice boltzmann for n steps
-function run_lb(observer::Function, sim::LatticeBoltzmann, nsteps::Int)
-    for n = 1:nsteps
-        run_lb(observer, sim)
+type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
+    # Lattice on which the kernel acts
+    lattice::LB.Lattice{T, I}
+    # indexing kernel
+    indexing::Indices.Indexing
+    # Local kernels for each lattice type
+    kernels :: Dict{Playground.Feature, LB.LocalKernel}
+    # Initializes the populations
+    initializers :: Dict{Playground.Feature, LB.Initializer}
+    # Current population
+    populations :: Array{T}
+    # Next population
+    next_populations :: Array{T}
+    # Describe where flow takes place
+    playground :: Array{Playground.Feature}
+    # Current time step
+    time::I
+end
+
+# Simple constructor for simulation structure
+function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwargs...)
+    function getarg(k::Symbol, default)
+        for (key, value) in kwargs
+            if key == k
+                return value
+            end
+        end
+        return default
     end
+
+    initializers = getarg(:initializers, Dict{Playground.Feature, LB.Initializer}())
+    keys = [k for (k, v) in kwargs]
+    if :ρ₀ ∈ keys && :μ₀ ∈ keys
+        initializers[Playground.FLUID] =
+            LB.Homogeneous{T}(getarg(:ρ₀, 0), getarg(:μ₀, zeros(T, length(dimensions))))
+    end
+
+    const n = length(lattice.weights)
+    SandBox{T, I}(
+        lattice::LB.Lattice{T, I},
+        Indices.Cartesian(I[dimensions...]),
+        getarg(:kernels, Dict{Playground.Feature, LB.LocalKernel}()),
+        initializers,
+        getarg(:population, zeros(T, tuple(n, dimensions...))),
+        getarg(:next_population, zeros(T, tuple(n, dimensions...))),
+        getarg(:playground, Playground.FLUID * ones(Playground.Feature, dimensions...)),
+        getarg(:time, 0)
+    )
+end
+function SandBox(lattice::Symbol, args...; kwargs...)
+    lattice = getfield(LB, lattice)::LB.Lattice
+    SandBox(lattice, args...; kwargs...)
 end
 
 # Runs lattice boltzmann for single step
-function run_lb(observer::Function, sim::LatticeBoltzmann)
-    # Aliases for easier acces to quantities
-    this_pop = sim.populations
-    next_pop = sim.next_populations
-    gridsize = [size(sim.playground)...]
-    kernel = sim.kernel
-    celerities = sim.kernel.celerities
-
-    # Loop over each lattice site
-    lattice_loop(sim) do indices, fᵢ, feature
-        # Apply collision step
-		this_pop[:, indices...] += collision(fᵢ, kernel, sim.τ⁻¹)
-        # Apply streaming step
-        for v = 1:size(celerities, 2)
-            streamed = integer_calc(gridsize, indices, celerities[:, v])
-            next_pop[v, streamed...] = this_pop[v, indices...]
-        end
+function run!(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::Integer=1)
+    # First initializes lattice
+    if doinit
+        LB.initialize(sim)
     end
-
-    # Applying boundary condition
-    lattice_loop(sim) do indices, fᵢ, feature
-        if feature == playground.INLET
-            next_pop[:, indices...] = zou_he_boundary(
-                indices..., gridsize..., fᵢ, sim.inlet_velocity)
-        elseif feature == playground.SOLID
-            noslip_boundary(sim.playground,indices,next_pop)
-	elseif feature == playground.OUTLET
-		next_pop[:, indices...] = open_outlet(
-		indices, gridsize, next_pop)
-        end
+    # Then run for N steps
+    for step in 1:nsteps
+        # run local kernel for each site
+        LB.local_kernel(sim)
+        # swap populations
+        sim.populations, sim.next_populations = sim.next_populations, sim.populations
+        # run observer at each step
+        observer()
     end
-
-    # reassign populations and next_populations with swap
-    sim.populations  = next_pop
-    sim.next_populations = this_pop
-
-    # run observer at each step
-    observer()
 end
 
-# Run simulation for N numbers of steps
-run_lb(sim::LatticeBoltzmann, nsteps::Int) = (
-    run_lb(()->nothing, sim, nsteps)
-)
-run_lb(sim::LatticeBoltzmann) = run_lb(()->nothing, sim)
+# Run simulation for N numbers of steps without observing
+run!(sim::Simulation; kwargs...) = run!(()->nothing, sim; kwargs...)
 
 end # module
