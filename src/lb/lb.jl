@@ -55,7 +55,7 @@ end
 
 type Homogeneous{T <: FloatingPoint} <: Initializer
     density::T
-    momentum::Vector{T}
+    momentum::DenseVector{T}
 end
 type NullInitializer <: Initializer; end
 const NULLINITIALIZER = NullInitializer()

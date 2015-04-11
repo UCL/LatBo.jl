@@ -1,21 +1,21 @@
 # Density at a given lattice site
-density(fᵢ::Vector) = sum(fᵢ)
+density(fᵢ::DenseVector) = sum(fᵢ)
 function density(fᵢ::DenseArray)
     shape = size(fᵢ)[2:end]
     reshape([sum(fᵢ[:, i]) for i = 1:prod(shape)], shape)
 end
 density(sim::Simulation) = density(sim.populations)
 # Momentum at given site
-momentum(fᵢ::Vector, cᵢ::Matrix) = vec(sum(cᵢ .* transpose(fᵢ), 2))
+momentum(fᵢ::DenseVector, cᵢ::DenseMatrix) = vec(sum(cᵢ .* transpose(fᵢ), 2))
 # Velocities at a given lattice site
-velocity(μ::Vector, ρ::Number) = μ / ρ
-velocity(fᵢ::Vector, cᵢ::Matrix, ρ::Number) = velocity(momentum(fᵢ, cᵢ), ρ)
-velocity(fᵢ::Vector, cᵢ::Matrix) = velocity(fᵢ, cᵢ, density(fᵢ))
+velocity(μ::DenseVector, ρ::Number) = μ / ρ
+velocity(fᵢ::DenseVector, cᵢ::DenseMatrix, ρ::Number) = velocity(momentum(fᵢ, cᵢ), ρ)
+velocity(fᵢ::DenseVector, cᵢ::DenseMatrix) = velocity(fᵢ, cᵢ, density(fᵢ))
 
 # Momentum and velocity functions that take the full grid, or a simulation object
 for name in [:momentum, :velocity]
     @eval begin
-        function $name(fᵢ::DenseArray, cᵢ::Matrix)
+        function $name(fᵢ::DenseArray, cᵢ::DenseMatrix)
             const shape = tuple(size(cᵢ, 1), size(fᵢ)[2:end]...)
             result = zeros(eltype(fᵢ), shape)
             for i = 1:prod(shape[2:end])
@@ -37,7 +37,8 @@ end
 
     $f^{eq}$ = weights .* [ρ + 3ē⋅μ + \frac{9}{2ρ} (ē⋅μ)² - \frac{3}{2ρ} μ⋅μ]$
 =#
-function equilibrium{T, I}(ρ::T, momentum::Vector{T}, celerities::Matrix{I}, weights::Vector{T})
+function equilibrium{T, I}(
+        ρ::T, momentum::DenseVector{T}, celerities::DenseMatrix{I}, weights::DenseVector{T})
     # computes momentum projected on each particle celerity first
     @assert length(momentum) == size(celerities, 1)
     @assert length(weights) == size(celerities, 2)
@@ -49,22 +50,22 @@ function equilibrium{T, I}(ρ::T, momentum::Vector{T}, celerities::Matrix{I}, we
         - 3/(2ρ) * dot(momentum, momentum)
     )
 end
-equilibrium{T, I}(lattice::Lattice{T, I}, fᵢ::Vector{T}) =
+equilibrium{T, I}(lattice::Lattice{T, I}, fᵢ::DenseVector{T}) =
     equilibrium(density(fᵢ), momentum(fᵢ, lattice.celerities), lattice.celerities, lattice.weights)
 
-equilibrium{T}(lattice::Lattice, ρ::T, momentum::Vector{T}) =
+equilibrium{T}(lattice::Lattice, ρ::T, momentum::DenseVector{T}) =
     equilibrium(ρ, momentum, lattice.celerities, lattice.weights)
-equilibrium{T}(lattice::Symbol, ρ::T, momentum::Vector{T}) =
+equilibrium{T}(lattice::Symbol, ρ::T, momentum::DenseVector{T}) =
     equilibrium(getfield(LB, lattice), ρ, momentum)
 
 immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
     from::GridCoords{I}
     density::T
-    momentum::Vector{T}
-    velocity::Vector{T}
-    feq::Vector{T}
+    momentum::DenseVector{T}
+    velocity::DenseVector{T}
+    feq::DenseVector{T}
 
-    function LocalQuantities(from::GridCoords{I}, fᵢ::Vector{T}, lattice::Lattice{T, I})
+    function LocalQuantities(from::GridCoords{I}, fᵢ::DenseVector{T}, lattice::Lattice{T, I})
         const ρ = density(fᵢ)
         const μ = momentum(fᵢ, lattice.celerities)
         const ν = velocity(μ, ρ)
