@@ -1,6 +1,7 @@
 module LatBo
 
-export SandBox, run!
+export SandBox, run!, geometry, index, gridcoords, LB, Playground
+
 
 # Type defining the feature of the simulation playground
 abstract Simulation{T <: FloatingPoint, I <: Int}
@@ -9,6 +10,9 @@ include("indexing.jl")
 include("playground.jl")
 include("geometry.jl")
 include("lb/lb.jl")
+
+importall .Indices
+using .LB
 
 type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
     # Lattice on which the kernel acts

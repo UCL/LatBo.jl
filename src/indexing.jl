@@ -1,4 +1,7 @@
 module Indices
+
+export index, gridcoords
+
 # Base type for all indexing kernels
 abstract Indexing
 typealias GridCoords{I <: Integer} Vector{I}

@@ -1,4 +1,9 @@
 module LB
+
+export Playground, SingleRelaxationTime, FluidKernel, SingleRelaxationTime
+export NashZeroOrderPressure, FluidStreaming, HalfWayBounceBack, ConstantVelocityIOlet
+export ConstantPopulationIOlet, density, momentum, velocity, ParabolicVelocityIOlet
+
 using ..Simulation
 using ..Playground.Feature
 using ..Playground.NOTHING
@@ -77,5 +82,4 @@ for (name, dictionary) in [(:initialize, :initializers), (:local_kernel, :kernel
         end
     end
 end
-
 end
