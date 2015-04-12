@@ -1,6 +1,7 @@
 module LatBoTests
 using FactCheck: facts, context, @fact, not, roughly, exitstatus, exactly
 
+include("playground.jl")
 include("geometry.jl")
 include("indexing.jl")
 include("lb/lattice.jl")

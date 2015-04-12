@@ -10,6 +10,7 @@ using ..Playground.NOTHING
 using ..Indices.GridCoords
 using ..Indices.index
 using ..Indices.gridcoords
+import ..Playground.initialize
 
 # Base type for all kernally stuff
 abstract Kernel
