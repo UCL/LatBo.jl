@@ -7,8 +7,9 @@ facts("Thermodynamic quantities and functions") do
             ncomponents = size(lattice.celerities, 2)
 
             context("rho is a geometric series") do
-                @fact density(Float64[1:9...]) => roughly(10*9/2)
-                @fact density(Float64[1:10...]) => roughly(10*11/2)
+                series(N) = N * (N+1)/2
+                @fact density([1:10]) => series(10)
+                @fact density([10:15]) => series(15) - series(9)
             end
 
             context("homogeneous populations sum to zero momentum") do

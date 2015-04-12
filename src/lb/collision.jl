@@ -4,7 +4,7 @@ type SingleRelaxationTime{T <: FloatingPoint} <: Collision
 end
 
 # Defines collision kernels for SRT
-collision{T}(τ⁻¹::T, fᵢ::DenseVector{T}, feq::DenseVector{T}) = τ⁻¹ * (feq - fᵢ)
+collision(τ⁻¹::Number, fᵢ::DenseVector, feq::DenseVector) = τ⁻¹ * (feq - fᵢ)
 collision(k::SingleRelaxationTime, fᵢ::DenseVector, feq::DenseVector) = collision(k.τ⁻¹, fᵢ, feq)
 # Applies collision operator onto fᵢ
 collision!(k::Collision, fᵢ::SubArray, feq::DenseVector) = (fᵢ += collision(k, fᵢ, feq))

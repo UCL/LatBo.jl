@@ -6,7 +6,7 @@ function density(fᵢ::DenseArray)
 end
 density(sim::Simulation) = density(sim.populations)
 # Momentum at given site
-momentum(fᵢ::DenseVector, cᵢ::DenseMatrix) = vec(sum(cᵢ .* transpose(fᵢ), 2))
+momentum(fᵢ::DenseVector, cᵢ::DenseMatrix) = cᵢ * fᵢ
 # Velocities at a given lattice site
 velocity(μ::DenseVector, ρ::Number) = μ / ρ
 velocity(fᵢ::DenseVector, cᵢ::DenseMatrix, ρ::Number) = velocity(momentum(fᵢ, cᵢ), ρ)
