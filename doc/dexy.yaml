@@ -1,2 +1,0 @@
-main.md|pandoc:
-    - pandoc: {args: -s, output-extensions: [.pdf]}
