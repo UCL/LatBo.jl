@@ -89,4 +89,6 @@ end
 # Run simulation for N numbers of steps without observing
 run!(sim::Simulation; kwargs...) = run!(()->nothing, sim; kwargs...)
 
+#= include("setups.jl") =#
+
 end # module
