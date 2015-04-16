@@ -1,4 +1,4 @@
-using LatBo.Indices: Cartesian, Periodic, index, gridcoords
+using LatBo.Indices: Cartesian, Periodic, index, gridcoords, neighbor_index
 
 facts("Grid coordinates to array index") do
     context("Cartesian") do
@@ -22,4 +22,15 @@ facts("Array index to grid coordinates") do
     @fact gridcoords(Cartesian([10, 20, 30]), 1) => [1, 1, 1]
     @fact gridcoords(Cartesian([10, 20, 30]), 10 * 20 * 30) => [10, 20, 30]
     @fact gridcoords(Cartesian([10, 20, 30]), 1 + 4 + 10 * 4 + 200 * 4) => [5, 5, 5]
+end
+
+facts("Compute neighbor index") do
+    cart = Cartesian([10, 7])
+    for from = ([2, 3], [5, 6]), direction = ([1, 0], [0, 1], [1, -1], [0, 0])
+        site = index(cart, from)
+        to = neighbor_index(cart, site, direction)
+        @fact gridcoords(cart, to) - from => direction
+    end
+    @fact_throws ErrorException neighbor_index(cart, 0, [0, 0])
+    @fact_throws ErrorException neighbor_index(cart, length(cart) + 1, [0, 0])
 end

@@ -40,3 +40,14 @@ const D3Q19 = Lattice{Float64, Int64}(
 
 const speed_of_sound_squared = 1.0 / 3.0
 const speed_of_sound = sqrt(speed_of_sound_squared)
+
+# Expand usage of neighbor_index
+function neighbor_index(
+        indexing::Indexing, site::Union(GridCoords, Integer), lattice::Lattice, direction::Integer)
+    neighbor_index(indexing, site, lattice.celerities[:, direction])
+end
+function neighbor_index(sim::Simulation, site::Union(Integer, GridCoords), direction::Integer)
+    neighbor_index(sim.indexing, site, sim.lattice, direction)
+end
+
+length(lattice::Lattice) = length(lattice.weights)

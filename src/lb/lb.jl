@@ -5,12 +5,11 @@ export NashZeroOrderPressure, FluidStreaming, HalfWayBounceBack, ConstantVelocit
 export ConstantPopulationIOlet, density, momentum, velocity, ParabolicVelocityIOlet
 
 using ..Simulation
-using ..Playground.Feature
-using ..Playground.NOTHING
-using ..Indices.GridCoords
-using ..Indices.index
-using ..Indices.gridcoords
+using ..Playground: Feature, NOTHING
+using ..Indices: GridCoords, index, Indexing, gridcoords
 import ..Playground.initialize
+import ..Indices.neighbor_index
+import Base.length
 
 # Base type for all kernally stuff
 abstract Kernel
@@ -38,15 +37,15 @@ include("streaming.jl")
 include("iolet.jl")
 
 local_kernel(kernel::NullKernel, args...; kargs...) = nothing
-function local_kernel(kernel::FluidKernel, sim::Simulation, site::Integer)
+function local_kernel(kernel::LocalKernel, sim::Simulation, site::Integer)
+    @assert site > 0 && site < length(sim.indexing)
     const from = gridcoords(sim.indexing, site)
-    const quantities = LocalQuantities(
+    @inbounds const quantities = LocalQuantities(
         typeof(sim).parameters, from, sim.populations[:, site], sim.lattice)
-    sim.populations[:, site] += (
-        collision(kernel.collision, sim.populations[:, site], quantities.feq)
-    )
+    @inbounds sim.populations[:, site] += (
+        collision(kernel.collision, sim.populations[:, site], quantities.feq))
     for direction in 1:length(sim.lattice.weights)
-        const to = index(sim.indexing, from + sim.lattice.celerities[:, direction])
+        @inbounds const to = neighbor_index(sim, from, direction)
         const link = to == 0 ? NOTHING: sim.playground[to]
         const streamer = get(kernel.streamers, link, NULLSTREAMER)
         streaming(streamer, quantities, sim, site, to, direction)
@@ -70,7 +69,6 @@ initialize(::NullInitializer, sim::Simulation, index::Integer) = nothing
 
 
 # Both initialize and local_kernel can be used within loops over all sites
-# So run them both together
 for (name, dictionary) in [(:initialize, :initializers), (:local_kernel, :kernels)]
     @eval begin
         function $name(sim::Simulation)
