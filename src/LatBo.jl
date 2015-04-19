@@ -1,6 +1,6 @@
 module LatBo
 
-export SandBox, run!, geometry, index, gridcoords, LB, Playground
+export SandBox, run!, geometry, index, gridcoords, LB, Playground, Units
 
 
 # Type defining the feature of the simulation playground
@@ -8,12 +8,14 @@ abstract Simulation{T <: FloatingPoint, I <: Int}
 
 include("indexing.jl")
 include("playground.jl")
+include("units.jl")
 
 include("geometry.jl")
 include("lb/lb.jl")
 
 importall .Indices
 using .LB
+using .Units
 
 include("sandbox.jl")
 
