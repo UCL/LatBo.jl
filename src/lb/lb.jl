@@ -1,6 +1,6 @@
 module LB
 
-export Playground, SingleRelaxationTime, FluidKernel, SingleRelaxationTime
+export Playground, FluidKernel, SingleRelaxationTime
 export NashZeroOrderPressure, FluidStreaming, HalfWayBounceBack, ConstantVelocityIOlet
 export ConstantPopulationIOlet, density, momentum, velocity, ParabolicVelocityIOlet
 
