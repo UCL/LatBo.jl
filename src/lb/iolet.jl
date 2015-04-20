@@ -62,7 +62,7 @@ type NashZeroOrderPressure{T} <: IOLetStreaming
     normal :: Vector{T}
     # Density at the inlet
     density :: T
-    function NashZeroOrderPressure(n₀, ρ)
+    function NashZeroOrderPressure(n₀::Vector, ρ::Number)
         n = T[n₀...]
         @assert dot(n, n) > 1e-12 && ρ > 1e-12
         new(n / norm(n), ρ)
