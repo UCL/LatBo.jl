@@ -20,7 +20,7 @@ typealias Weight{T}    quantity(T, KiloGram)
 typealias Time{T}      quantity(T, Second)
 typealias Velocity{T}  quantity(T, Meter/Second)
 typealias Pressure{T}  quantity(T, Pascal)
-typealias Viscosity{T} quantity(T, Meter^2 * Second)
+typealias Viscosity{T} quantity(T, Pascal * Second)
 typealias Density{T}   quantity(T, KiloGram * Meter^-3)
 
 const mmHg = NonSIUnit{typeof(Pascal), :mmHg}()
@@ -40,8 +40,19 @@ immutable type LBUnits{T <: Number}
     δx::Length{T}
     δm::Weight{T}
 end
+function LBUnits{T <: Number}(::Type{T}, δt::Time, δx::Length, δm::Weight)
+    LBUnits{T}(δt, δx, δm)
+end
+function LBUnits(δt::Time, δx::Length, δm::Weight)
+    promoted = promote(δt.val, δx.val, δm.val)
+    LBUnits(promoted[1] * unit(δt), promoted[2] * unit(δx), promoted[3] * unit(δm))
+end
+
 # Relies on lb density = 1
-LBUnits{T}(δt::Time{T}, δx::Length{T}, ρ::Density{T}=1000kg*m^-3) = LBUnits{T}(δt, δx, ρ*δx^3)
+LBUnits(δt::Time, δx::Length, ρ::Density=1000kg*m^-3) = LBUnits(δt, δx, ρ*δx^3)
+function LBUnits{T <: Number}(::Type{T}, δt::Time, δx::Length, ρ::Density=1000kg*m^-3)
+    LBUnits(T, δt, δx, ρ*δx^3)
+end
 
 # Converts from physical units to (dimensionless) lb units
 function as(lb::LBUnits, x::SIUnit)
