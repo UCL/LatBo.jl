@@ -7,7 +7,7 @@ using .LB: Lattice
 function lbgk(
         lattice::Lattice, dimensions::(Integer...), δt::Time, δx::Length;
         viscosity::Viscosity=1e-3Pa*s, ρ₀::Density=1e3kg/m^3,
-        μ₀::typeof([0, 0] * (m/s))=[0, 0] * (m/s), p₀::Pressure=as(80.0mmHg, Pa), Δp::Pressure=0Pa,
+        μ₀::typeof([0., 0] * (m/s))=[0., 0] * (m/s), p₀::Pressure=as(80.0mmHg, Pa), Δp::Pressure=0Pa,
         kwargs...)
 
     const T = typeof(lattice).parameters[1]
@@ -63,5 +63,5 @@ function lbgk(
 end
 
 function lbgk(lattice::Symbol, dimensions::(Integer...), δt::Time, δx::Length; kwargs...)
-    lbgk(getfield(LB, lattice)::LB.Lattice, dimensions, δt, δx, kwargs...)
+    lbgk(getfield(LB, lattice)::LB.Lattice, dimensions, δt, δx; kwargs...)
 end

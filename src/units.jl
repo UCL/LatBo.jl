@@ -9,7 +9,7 @@ module Units
 using SIUnits: NonSIQuantity, SIQuantity, NonSIUnit, SIUnit, sidims, unit
 using SIUnits: quantity, Meter, KiloGram, Pascal, Second
 
-import SIUnits.as
+using SIUnits.as
 import Base.convert
 import Base.isapprox
 

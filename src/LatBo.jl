@@ -1,6 +1,7 @@
 module LatBo
 
 export SandBox, run!, geometry, index, gridcoords, LB, Playground, Units
+export velocity, momentum, density
 
 
 # Type defining the feature of the simulation playground
