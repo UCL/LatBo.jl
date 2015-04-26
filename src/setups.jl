@@ -1,26 +1,36 @@
 export lbgk
-using SIUnits.ShortUnits
-using .Units: Time, Length, Viscosity, Density, Velocity, Pressure, Weight, mmHg, LBUnits
 using .LB: Lattice
+using .Units: dimensionless
 
 # Sets up calculation with standard lbgk
+# All units should be in SI: 
+#  - time -> s
+#  - length -> m
+#  - pressure -> Pa
+#  - viscosity -> Pa * s
 function lbgk(
-        lattice::Lattice, dimensions::(Integer...), δt::Time, δx::Length;
-        viscosity::Viscosity=1e-3Pa*s, ρ₀::Density=1e3kg/m^3,
-        μ₀::typeof([0., 0] * (m/s))=[0., 0] * (m/s), p₀::Pressure=as(80.0mmHg, Pa), Δp::Pressure=0Pa,
+        lattice::Lattice, dimensions::(Integer...),
+        δt::Number,                       # s
+        δx::Number;                       # m
+        viscosity::Number=1e-3,           # Pa*s
+        ρ₀::Number=1e3,                   # kg*m^-3
+        μ₀::Vector=[0., 0],               # m/s,
+        p₀::Number=80.0 * 133.3223684211, # mmHG * x = Pa
+        Δp::Number=0,                     # Pa
         kwargs...)
 
     const T = typeof(lattice).parameters[1]
-    const units = LBUnits(T, δt, δx, ρ₀)
+    const δm = ρ₀ * δx^3
+    const units = LBUnits{T}(δt, δx, δm)
 
-    const μ = T[u for u in as(units, μ₀)]
-    const ρ = convert(T, as(units, ρ₀))
-    const p = convert(T, as(units, p₀))
+    const μ = dimensionless(units, :velocity, μ₀)
+    const ρ = dimensionless(units, :density, ρ₀)
+    const p = dimensionless(units, :pressure, p₀)
     const c_s² = 1./3.
     const c_s = sqrt(c_s²)
-    const τ = 1. + as(units, viscosity) / c_s²
+    const τ = 1. + dimensionless(units, :viscosity, viscosity) / c_s²
 
-    density(p) = 1. + as(units, p) / c_s²
+    density(p) = 1. + dimensionless(units, :pressure, p) / c_s²
 
     # Set up main item
     result = SandBox(lattice, dimensions; ρ₀=ρ, μ₀=μ, kwargs...)
@@ -62,6 +72,6 @@ function lbgk(
     result
 end
 
-function lbgk(lattice::Symbol, dimensions::(Integer...), δt::Time, δx::Length; kwargs...)
+function lbgk(lattice::Symbol, dimensions::(Integer...), δt::Number, δx::Number; kwargs...)
     lbgk(getfield(LB, lattice)::LB.Lattice, dimensions, δt, δx; kwargs...)
 end
