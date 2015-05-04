@@ -1,6 +1,6 @@
 export lbgk
 using .LB: Lattice
-using .Units: dimensionless
+using .Units: dimensionless, LBUnits
 
 # Sets up calculation with standard lbgk
 # All units should be in SI: 
