@@ -13,18 +13,17 @@ function lbgk(
         δt::Number,                       # s
         δx::Number;                       # m
         viscosity::Number=1e-3,           # Pa*s
-        ρ₀::Number=1e3,                   # kg*m^-3
         μ₀::Vector=[0., 0],               # m/s,
         p₀::Number=80.0 * 133.3223684211, # mmHG * x = Pa
         Δp::Number=0,                     # Pa
         kwargs...)
 
     const T = typeof(lattice).parameters[1]
+    const ρ₀=1e3                    # kg*m^-3
     const δm = ρ₀ * δx^3
     const units = LBUnits{T}(δt, δx, δm)
 
     const μ = dimensionless(units, :velocity, μ₀)
-    const ρ = dimensionless(units, :density, ρ₀)
     const p = dimensionless(units, :pressure, p₀)
     const c_s² = 1./3.
     const c_s = sqrt(c_s²)
@@ -33,10 +32,10 @@ function lbgk(
     density(p) = 1. + dimensionless(units, :pressure, p) / c_s²
 
     # Set up main item
-    result = SandBox(lattice, dimensions; ρ₀=ρ, μ₀=μ, kwargs...)
+    result = SandBox(lattice, dimensions; ρ₀=density(p₀ - 0.5Δp), μ₀=μ, kwargs...)
     # Set up kernel and streamers with some default values
     streamers = {
-        Playground.INLET  => NashZeroOrderPressure{T}(T[0, 1], ρ),
+        Playground.INLET  => NashZeroOrderPressure{T}(T[0, 1], density(p₀)),
         Playground.OUTLET => NashZeroOrderPressure{T}(T[0, 1], convert(T, density(p₀ - Δp))),
         Playground.FLUID  => FluidStreaming(),
         Playground.SOLID  => HalfWayBounceBack()
