@@ -4,6 +4,7 @@ export Playground, FluidKernel, SingleRelaxationTime
 export NashZeroOrderPressure, FluidStreaming, HalfWayBounceBack, ConstantVelocityIOlet
 export ConstantPopulationIOlet, density, momentum, velocity, ParabolicVelocityIOlet
 
+using ..AbstractLattice
 using ..Simulation
 using ..Playground: Feature, NOTHING
 using ..Indices: GridCoords, index, Indexing, gridcoords

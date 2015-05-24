@@ -1,4 +1,4 @@
-type Lattice{T <: Real, I <: Int}
+type Lattice{T <: Real, I <: Int} <: AbstractLattice
     celerities::Matrix{I}
     weights::Vector{T}
     inversion::Vector{I}
@@ -43,11 +43,16 @@ const speed_of_sound = sqrt(speed_of_sound_squared)
 
 # Expand usage of neighbor_index
 function neighbor_index(
-        indexing::Indexing, site::Union(GridCoords, Integer), lattice::Lattice, direction::Integer)
+        indexing::Indexing, site::GridCoords, lattice::AbstractLattice, direction::Integer)
     neighbor_index(indexing, site, lattice.celerities[:, direction])
+end
+function neighbor_index(
+        indexing::Indexing, site::Integer, lattice::AbstractLattice, direction::Integer)
+    neighbor_index(indexing, gridcoords(indexing, site), lattice.celerities[:, direction])
 end
 function neighbor_index(sim::Simulation, site::Union(Integer, GridCoords), direction::Integer)
     neighbor_index(sim.indexing, site, sim.lattice, direction)
 end
 
-length(lattice::Lattice) = length(lattice.weights)
+
+length(lattice::AbstractLattice) = length(lattice.weights)

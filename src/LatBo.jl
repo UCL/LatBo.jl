@@ -6,8 +6,9 @@ export velocity, momentum, density
 
 # Type defining the feature of the simulation playground
 abstract Simulation{T <: FloatingPoint, I <: Int}
+abstract AbstractLattice
 
-include("indexing.jl")
+include("indices/indices.jl")
 include("playground.jl")
 include("units.jl")
 
@@ -21,7 +22,8 @@ using .Units
 include("sandbox.jl")
 
 # Runs lattice boltzmann for single step
-function run!(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::Integer=1)
+function run!(observer::Function, sim::Simulation;
+    doinit::Bool=true, nsteps::Integer=1, kernel=LB.local_kernel)
     # First initializes lattice
     if doinit
         LB.initialize(sim)
@@ -29,7 +31,7 @@ function run!(observer::Function, sim::Simulation; doinit::Bool=true, nsteps::In
     # Then run for N steps
     for step in 1:nsteps
         # run local kernel for each site
-        LB.local_kernel(sim)
+        kernel(sim)
         # swap populations
         sim.populations, sim.next_populations = sim.next_populations, sim.populations
         # run observer at each step
