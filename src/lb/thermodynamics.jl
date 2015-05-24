@@ -59,18 +59,17 @@ equilibrium{T}(lattice::Symbol, ρ::T, momentum::DenseVector{T}) =
     equilibrium(getfield(LB, lattice), ρ, momentum)
 
 immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
-    from::GridCoords{I}
     density::T
     momentum::DenseVector{T}
     velocity::DenseVector{T}
     feq::DenseVector{T}
 
-    function LocalQuantities(from::GridCoords{I}, fᵢ::DenseVector{T}, lattice::Lattice{T, I})
+    function LocalQuantities(fᵢ::DenseVector{T}, lattice::Lattice{T, I})
         const ρ = density(fᵢ)
         const μ = momentum(fᵢ, lattice.celerities)
         const ν = velocity(μ, ρ)
         const feq = equilibrium(ρ, μ, lattice.celerities, lattice.weights)
-        new(from, ρ, μ, ν, feq)
+        new(ρ, μ, ν, feq)
     end
 end
 

@@ -30,8 +30,8 @@ facts("Checking caching") do
         cached = LatBo.Indices.Cached(periodic, lattice)
         @fact size(cached.cache) => (length(lattice), length(periodic))
         @fact typeof(cached.indexing) => typeof(periodic)
-        @fact size(cached) => size(cartesian)
-        @fact length(cached) => length(cartesian)
+        @fact size(cached) => size(periodic)
+        @fact length(cached) => length(periodic)
         for i = 1:length(periodic), d = 1:length(lattice)
             @fact neighbor_index(cached, i, lattice, d) => neighbor_index(periodic, i, lattice, d)
         end

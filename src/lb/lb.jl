@@ -40,13 +40,12 @@ include("iolet.jl")
 local_kernel(kernel::NullKernel, args...; kargs...) = nothing
 function local_kernel(kernel::LocalKernel, sim::Simulation, site::Integer)
     @assert site > 0 && site < length(sim.indexing)
-    const from = gridcoords(sim.indexing, site)
     @inbounds const quantities = LocalQuantities(
-        typeof(sim).parameters, from, sim.populations[:, site], sim.lattice)
+        typeof(sim).parameters, sim.populations[:, site], sim.lattice)
     @inbounds sim.populations[:, site] += (
         collision(kernel.collision, sim.populations[:, site], quantities.feq))
     for direction in 1:length(sim.lattice.weights)
-        @inbounds const to = neighbor_index(sim, from, direction)
+        @inbounds const to = neighbor_index(sim, site, direction)
         const link = to == 0 ? NOTHING: sim.playground[to]
         const streamer = get(kernel.streamers, link, NULLSTREAMER)
         streaming(streamer, quantities, sim, site, to, direction)

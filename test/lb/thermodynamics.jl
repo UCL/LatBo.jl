@@ -44,15 +44,13 @@ facts("Thermodynamic quantities and functions") do
             end
 
             context("local quantities aggregator") do
-               from = Int64[1, 2, 3]
                fᵢ = convert(Array{Float64}, 1.0 + rand(Float64, ncomponents))
                μ = momentum(fᵢ, lattice.celerities)
                ν = velocity(fᵢ, lattice.celerities)
                ρ = density(fᵢ)
                feq = equilibrium(lattice, ρ, μ)
 
-               quants = LocalQuantities{Float64, Int64}(from, fᵢ, lattice)
-               @fact quants.from => from
+               quants = LocalQuantities{Float64, Int64}(fᵢ, lattice)
                @fact quants.density => roughly(ρ)
                @fact quants.momentum => roughly(μ)
                @fact quants.velocity => roughly(ν)
