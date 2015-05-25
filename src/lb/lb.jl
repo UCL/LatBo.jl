@@ -47,8 +47,7 @@ include("iolet.jl")
 local_kernel(kernel::NullKernel, args...; kargs...) = nothing
 function local_kernel(kernel::LocalKernel, sim::Simulation, site::Integer)
     @assert site > 0 && site < length(sim.indexing)
-    @inbounds const quantities = LocalQuantities(
-        typeof(sim).parameters, sim.populations[:, site], sim.lattice)
+    @inbounds const quantities = LocalQuantities(sim.populations[:, site], sim.lattice)
     @inbounds sim.populations[:, site] += (
         collision(kernel.collision, sim.populations[:, site], quantities.feq))
     for direction in 1:length(sim.lattice.weights)
