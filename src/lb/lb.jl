@@ -22,6 +22,12 @@ abstract Collision <: Kernel
 abstract Streaming <: Kernel
 # Base type for all initilizers
 abstract Initializer <: Kernel
+# Holds local quantities
+# - density
+# - momentum
+# - velocity
+# - feq
+abstract AbstractLocalQuantities
 
 type FluidKernel <: LocalKernel
     # Collision kernel type and data
@@ -33,6 +39,7 @@ type NullKernel <: LocalKernel; end
 
 include("lattice.jl")
 include("thermodynamics.jl")
+include("LocalQuantities.jl")
 include("collision.jl")
 include("streaming.jl")
 include("iolet.jl")
