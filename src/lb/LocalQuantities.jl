@@ -16,7 +16,6 @@ end
 # Pre-allocates a local quantity aggregator
 function LocalQuantities(lattice::Lattice)
     const T = eltype(lattice.weights)
-    const I = eltype(lattice.inversion)
 
     LocalQuantities{T}(
         convert(T, 0), zeros(T, ndims(lattice)),
@@ -32,4 +31,3 @@ function LocalQuantities!{T}(out::LocalQuantities{T}, fᵢ::DenseVector{T}, latt
     equilibrium!(out.feq, out.density, out.momentum, lattice.celerities, lattice.weights)
     out
 end
-

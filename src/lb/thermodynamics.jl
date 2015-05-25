@@ -83,9 +83,15 @@ function equilibrium!{T, I}(
     @assert length(feq) == size(celerities, 2)
     @assert length(momentum) == size(celerities, 1)
     @assert length(weights) == size(celerities, 2)
+    const inv_tworho = 1 / (2ρ)
+    # Interestingly enough, celerities[:, i] is fairly slower than celerities[j:j+d], where j is
+    # incremented at each step of the loop
+    const inc = length(momentum)
+    const d = inc - 1
+    j = 1
     for i in 1:length(feq)
-        const μ_on_ē = 3dot(celerities[:, i], momentum)
-        const inv_tworho = 1 / (2ρ)
+        const μ_on_ē = 3dot(celerities[j:j+d], momentum)
+        j += inc
         feq[i] = weights[i] * (
             ρ + μ_on_ē + (μ_on_ē * μ_on_ē - 3dot(momentum, momentum)) * inv_tworho)
     end
