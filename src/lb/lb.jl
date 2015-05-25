@@ -10,7 +10,7 @@ using ..Playground: Feature, NOTHING
 using ..Indices: GridCoords, index, Indexing, gridcoords
 import ..Playground.initialize
 import ..Indices.neighbor_index
-import Base.length
+import Base: length, ndims
 
 # Base type for all kernally stuff
 abstract Kernel
