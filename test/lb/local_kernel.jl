@@ -33,7 +33,7 @@ type MockKernel <: LocalKernel
     value
 end
 
-local_kernel(kernel::MockKernel, sim::Simulation, site::Integer) =
+local_kernel(kernel::MockKernel, sim::Simulation, site::Integer, args...) =
     (sim.populations[:, site] = kernel.value)
 
 facts("Local fluid kernel") do

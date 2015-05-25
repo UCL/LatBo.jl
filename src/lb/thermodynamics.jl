@@ -6,11 +6,29 @@ function density(fᵢ::DenseArray)
 end
 density(sim::Simulation) = density(sim.populations)
 # Momentum at given site
+function momentum!(μ_out::DenseVector, fᵢ::DenseVector, cᵢ::DenseMatrix)
+    @assert length(μ_out) == size(cᵢ, 1) && length(fᵢ) == size(cᵢ, 2)
+    μ_out[:] = 0
+    for i in 1:length(μ_out)
+        for j in 1:length(fᵢ)
+            if cᵢ[i, j] == 1
+                μ_out[i] += fᵢ[j]
+            elseif cᵢ[i, j] == -1
+                μ_out[i] -= fᵢ[j]
+            end
+        end
+    end
+    μ_out
+end
 momentum(fᵢ::DenseVector, cᵢ::DenseMatrix) = cᵢ * fᵢ
 # Velocities at a given lattice site
 velocity(μ::DenseVector, ρ::Number) = μ / ρ
 velocity(fᵢ::DenseVector, cᵢ::DenseMatrix, ρ::Number) = velocity(momentum(fᵢ, cᵢ), ρ)
 velocity(fᵢ::DenseVector, cᵢ::DenseMatrix) = velocity(fᵢ, cᵢ, density(fᵢ))
+function velocity!(ν_out::DenseVector, μ::DenseVector, ρ::Number)
+    ν_out[:] = μ
+    scale!(ν_out, 1 / ρ)
+end
 
 # Momentum and velocity functions that take the full grid, or a simulation object
 for name in [:momentum, :velocity]
@@ -57,28 +75,24 @@ equilibrium{T}(lattice::Lattice, ρ::T, momentum::DenseVector{T}) =
     equilibrium(ρ, momentum, lattice.celerities, lattice.weights)
 equilibrium{T}(lattice::Symbol, ρ::T, momentum::DenseVector{T}) =
     equilibrium(getfield(LB, lattice), ρ, momentum)
-
-immutable type LocalQuantities{T <: FloatingPoint, I <: Int}
-    from::GridCoords{I}
-    density::T
-    momentum::DenseVector{T}
-    velocity::DenseVector{T}
-    feq::DenseVector{T}
-
-    function LocalQuantities(from::GridCoords{I}, fᵢ::DenseVector{T}, lattice::Lattice{T, I})
-        const ρ = density(fᵢ)
-        const μ = momentum(fᵢ, lattice.celerities)
-        const ν = velocity(μ, ρ)
-        const feq = equilibrium(ρ, μ, lattice.celerities, lattice.weights)
-        new(from, ρ, μ, ν, feq)
+# Computes equilibrium without memory-allocation
+# Incoming must have the right size
+function equilibrium!{T, I}(
+        feq::DenseVector{T}, ρ::T, momentum::DenseVector{T}, celerities::DenseMatrix{I},
+        weights::DenseVector{T})
+    @assert length(feq) == size(celerities, 2)
+    @assert length(momentum) == size(celerities, 1)
+    @assert length(weights) == size(celerities, 2)
+    const inv_tworho = 1 / (2ρ)
+    # Interestingly enough, celerities[:, i] is fairly slower than celerities[j:j+d], where j is
+    # incremented at each step of the loop
+    const inc = length(momentum)
+    const d = inc - 1
+    j = 1
+    for i in 1:length(feq)
+        const μ_on_ē = 3dot(celerities[j:j+d], momentum)
+        j += inc
+        feq[i] = weights[i] * (
+            ρ + μ_on_ē + (μ_on_ē * μ_on_ē - 3dot(momentum, momentum)) * inv_tworho)
     end
-end
-
-# Convenience calls to specify types as arguments
-LocalQuantities{T <: FloatingPoint, I <: Integer}(::Type{T}, ::Type{I}, args...) =
-    LocalQuantities{T, I}(args...)
-function LocalQuantities(types::(Type, Type), args...)
-    @assert types[1] <: FloatingPoint
-    @assert types[2] <: Integer
-    LocalQuantities(types..., args...)
 end
