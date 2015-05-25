@@ -1,4 +1,5 @@
-using LatBo.LB: velocity, momentum, density, equilibrium, D2Q9, D3Q19, LocalQuantities
+using LatBo.LB: velocity, momentum, density, equilibrium, D2Q9, D3Q19, LocalQuantities,
+        LocalQuantities!
 
 facts("Thermodynamic quantities and functions") do
     for lattice_name in [:D2Q9, :D3Q19]
@@ -44,19 +45,32 @@ facts("Thermodynamic quantities and functions") do
             end
 
             context("local quantities aggregator") do
-               from = Int64[1, 2, 3]
-               fᵢ = convert(Array{Float64}, 1.0 + rand(Float64, ncomponents))
-               μ = momentum(fᵢ, lattice.celerities)
-               ν = velocity(fᵢ, lattice.celerities)
-               ρ = density(fᵢ)
-               feq = equilibrium(lattice, ρ, μ)
+                fᵢ = convert(Array{Float64}, 1.0 + rand(Float64, ncomponents))
+                μ = momentum(fᵢ, lattice.celerities)
+                ν = velocity(fᵢ, lattice.celerities)
+                ρ = density(fᵢ)
+                feq = equilibrium(lattice, ρ, μ)
 
-               quants = LocalQuantities{Float64, Int64}(from, fᵢ, lattice)
-               @fact quants.from => from
-               @fact quants.density => roughly(ρ)
-               @fact quants.momentum => roughly(μ)
-               @fact quants.velocity => roughly(ν)
-               @fact quants.feq => roughly(feq)
+                quants = LocalQuantities(fᵢ, lattice)
+                @fact quants.density => roughly(ρ)
+                @fact quants.momentum => roughly(μ)
+                @fact quants.velocity => roughly(ν)
+                @fact quants.feq => roughly(feq)
+            end
+
+            context("pre-allocated local aggregator") do
+                fᵢ = convert(Array{Float64}, 1.0 + rand(Float64, ncomponents))
+                quants = LocalQuantities(fᵢ, lattice)
+                pre = LocalQuantities(lattice)
+                @fact size(pre.momentum) => size(quants.momentum)
+                @fact size(pre.velocity) => size(quants.velocity)
+                @fact size(pre.feq) => size(quants.feq)
+
+                LocalQuantities!(pre, fᵢ, lattice)
+                @fact pre.density => roughly(quants.density)
+                @fact pre.momentum => roughly(quants.momentum)
+                @fact pre.velocity => roughly(quants.velocity)
+                @fact pre.feq => roughly(quants.feq)
             end
         end
     end

@@ -38,7 +38,7 @@ function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwar
     const n = length(lattice.weights)
     SandBox{T, I}(
         lattice::LB.Lattice{T, I},
-        Indices.Cartesian(I[dimensions...]),
+        Indices.Cached(Indices.Cartesian(I[dimensions...]), lattice),
         getarg(:kernels, Dict{Playground.Feature, LB.LocalKernel}()),
         initializers,
         getarg(:population, zeros(T, tuple(n, dimensions...))),

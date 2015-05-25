@@ -21,7 +21,10 @@ streaming(
     from::Integer, to::Integer, direction::Integer
 ) = streaming(streamer, sim, from, to, direction)
 function streaming(::FluidStreaming, sim::Simulation, from::Integer, to::Integer, dir::Integer)
-    sim.next_populations[dir, to] = sim.populations[dir, from]
+    # Replacing multi-dimensional getitem with hand-crafted version gains ~10% overall speed-up.
+    # At least in this one case. Note that this one case is called very very often.
+    const N = size(sim.next_populations, 1)
+    @inbounds sim.next_populations[N * (to - 1) + dir] = sim.populations[N * (from - 1) + dir]
 end
 
 # Half-way bounce back streaming
