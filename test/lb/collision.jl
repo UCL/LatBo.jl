@@ -1,4 +1,4 @@
-using LatBo.LB: collision
+using LatBo.LB: collision, collision!
 
 facts("Collision kernels") do
     context("Single relaxation time") do
@@ -17,6 +17,18 @@ facts("Collision kernels") do
         end
         context("Lock-down the sign") do
             @fact collision(1, [1:10], zeros(Int8, 10)) .< 0 => all
+        end
+
+        context("collision! <==> collision") do
+            τ⁻¹ = 3
+            fᵢ = rand(Int8, (10, 5))
+            fᵢ_copy = deepcopy(fᵢ)
+            feq = zeros(Int8, 10) #rand(Int8, 10)
+            for i in 1:size(fᵢ, 2)
+                fᵢ_copy[:, i] += collision(τ⁻¹, fᵢ_copy[:, i], feq)
+                collision!(fᵢ, τ⁻¹, feq, i)
+                @fact fᵢ[:, i] => fᵢ_copy[:, i] "$(fᵢ_copy[:, i])"
+            end
         end
     end
 end

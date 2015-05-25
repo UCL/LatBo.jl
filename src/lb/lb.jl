@@ -57,7 +57,7 @@ function local_kernel(
     @assert site > 0 && site < length(sim.indexing)
     @inbounds fᵢ[:] = sim.populations[:, site]
     @inbounds LocalQuantities!(quantities, fᵢ, sim.lattice)
-    @inbounds sim.populations[:, site] += (collision(kernel.collision, fᵢ, quantities.feq))
+    @inbounds collision!(sim.populations, kernel.collision, quantities.feq, site)
     for direction in 1:length(sim.lattice.weights)
         @inbounds const to = neighbor_index(sim, site, direction)
         const link = to == 0 ? NOTHING: sim.playground[to]
