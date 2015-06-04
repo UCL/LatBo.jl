@@ -43,5 +43,6 @@ end
 run!(sim::Simulation; kwargs...) = run!(()->nothing, sim; kwargs...)
 
 include("setups.jl")
+include("parallel/partition.jl")
 
 end # module
