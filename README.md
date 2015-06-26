@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/UCL/LatBo.jl.svg)](https://travis-ci.org/UCL/LatBo.jl?branch=master)
+[![Build Status](https://travis-ci.org/UCL/LatBo.jl.svg?branch=master)](https://travis-ci.org/UCL/LatBo.jl)
 # LatBo.jl
 
 [Lattice
