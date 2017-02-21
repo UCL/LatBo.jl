@@ -32,7 +32,7 @@ function isapprox(x::SIQuantity, y::SIQuantity; kwargs...)
 end
 
 # Holds all and everything about units that we know of
-immutable type LBUnits{T <: Number}
+immutable LBUnits{T <: Number}
     δt::Time{T}
     δx::Length{T}
     δm::Weight{T}

@@ -1,4 +1,4 @@
-type LocalQuantities{T <: FloatingPoint} <: AbstractLocalQuantities
+type LocalQuantities{T <: AbstractFloat} <: AbstractLocalQuantities
     density::T
     momentum::DenseVector{T}
     velocity::DenseVector{T}

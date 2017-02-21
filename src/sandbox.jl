@@ -1,4 +1,4 @@
-type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
+type SandBox{T <: AbstractFloat, I <: Integer} <: Simulation{T, I}
     # Lattice on which the kernel acts
     lattice::LB.Lattice{T, I}
     # indexing kernel
@@ -18,7 +18,9 @@ type SandBox{T <: FloatingPoint, I <: Int} <: Simulation{T, I}
 end
 
 # Simple constructor for simulation structure
-function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwargs...)
+function SandBox{T, N, I <: Integer}(lattice::LB.Lattice{T, I},
+                                     dimensions::NTuple{N, I};
+                                     kwargs...)
     function getarg(k::Symbol, default)
         for (key, value) in kwargs
             if key == k
@@ -35,8 +37,9 @@ function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwar
             LB.Homogeneous{T}(getarg(:ρ₀, 0), getarg(:μ₀, zeros(T, length(dimensions))))
     end
 
+
     const n = length(lattice.weights)
-    SandBox{T, I}(
+    SandBox(
         lattice::LB.Lattice{T, I},
         Indices.Cached(Indices.Cartesian(I[dimensions...]), lattice),
         getarg(:kernels, Dict{Playground.Feature, LB.LocalKernel}()),
@@ -47,7 +50,7 @@ function SandBox{T, I}(lattice::LB.Lattice{T, I}, dimensions::(Integer...); kwar
         getarg(:time, 0)
     )
 end
-function SandBox(lattice::Symbol, args...; kwargs...)
+function SandBox(lattice::Symbol, args::NTuple; kwargs...)
     lattice = getfield(LB, lattice)::LB.Lattice
-    SandBox(lattice, args...; kwargs...)
+    SandBox(lattice, args; kwargs...)
 end

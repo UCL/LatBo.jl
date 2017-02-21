@@ -1,6 +1,6 @@
 module Playground
 using Base: Cartesian
-typealias Feature Uint8
+typealias Feature UInt8
 
 # Enumerates possible features on the grid:
 # - FLUID: Site on which to perform standard lattice-boltzmann

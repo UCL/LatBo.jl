@@ -50,7 +50,7 @@ function neighbor_index(
         indexing::Indexing, site::Integer, lattice::AbstractLattice, direction::Integer)
     neighbor_index(indexing, gridcoords(indexing, site), lattice.celerities[:, direction])
 end
-function neighbor_index(sim::Simulation, site::Union(Integer, GridCoords), direction::Integer)
+function neighbor_index(sim::Simulation, site::Union{Integer, GridCoords}, direction::Integer)
     neighbor_index(sim.indexing, site, sim.lattice, direction)
 end
 

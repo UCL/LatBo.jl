@@ -4,12 +4,12 @@
 # - `dimensionless` goes from physical to lattice units
 # - `physical` goes the other way
 #
-# Until Keno/SIUnits.jl#19 is resolved, we cannot use SIUnits.jl.
+# Until www.github.com/Keno/SIUnits.jl#19 is resolved, we cannot use SIUnits.jl.
 # However, a working implementation does exist in the tests and in the git history.
 module Units
 export LBunits, dimensionless, physical
 # Holds all and everything about units that we know of
-immutable type LBUnits{T <: Number}
+immutable LBUnits{T <: Number}
     δt::T
     δx::T
     δm::T
@@ -18,11 +18,11 @@ function LBUnits{T <: Number}(::Type{T}, δt::Number, δx::Number, δm::Number)
     LBUnits{T}(δt, δx, δm)
 end
 
-const DIMENSIONALITY = {
+const DIMENSIONALITY = Dict{Symbol, NTuple{3, Int64}}(
     :time => (1, 0, 0), :length => (0, 1, 0), :weight => (0, 0, 1),
     :velocity => (-1, 1, 0), :pressure => (-2, -1, 1), :viscosity => (-1, -1, 1),
     :density => (0, -3, 1)
-}
+)
 
 function dimensionless(lb::LBUnits, dimension::Symbol, x)
     if !haskey(DIMENSIONALITY, dimension)

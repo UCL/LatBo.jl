@@ -1,6 +1,6 @@
 using LatBo: SandBox, Simulation
 using LatBo.Playground: Feature
-using LatBo.LB: Streaming, Collision, FluidKernel, LocalKernel
+using LatBo.LB: Streaming, Collision, FluidKernel, LocalKernel, LocalQuantities
 # the following functions are extended for mock types
 import LatBo.LB.velocity
 import LatBo.LB.collision
@@ -33,8 +33,10 @@ type MockKernel <: LocalKernel
     value
 end
 
-local_kernel(kernel::MockKernel, sim::Simulation, site::Integer, args...) =
+function local_kernel(kernel::MockKernel, sim::Simulation, site::Integer,
+                      ::LocalQuantities, ::DenseVector)
     (sim.populations[:, site] = kernel.value)
+end
 
 facts("Local fluid kernel") do
     sim = SandBox(:D2Q9, (4, 4))
@@ -46,11 +48,11 @@ facts("Local fluid kernel") do
 
     kernel = FluidKernel(
         MockCollision(),
-        {
+        Dict(
             convert(Feature, 9) => MockStreaming(),
             convert(Feature, 42) => MockStreaming(),
             convert(Feature, 0) => MockStreaming()
-        }
+        )
     )
     sim.playground[:] = 0
     sim.playground[finish]= 42
@@ -63,33 +65,33 @@ facts("Local fluid kernel") do
 
         local_kernel(kernel, sim, start)
 
-        @fact kernel.collision.calls => 1
-        @fact length(kernel.collision.args) => 2
-        @fact kernel.collision.args[1] => roughly(fᵢ)
-        @fact kernel.collision.args[2] => roughly(feq)
+        @fact kernel.collision.calls --> 1
+        @fact length(kernel.collision.args) --> 2
+        @fact kernel.collision.args[1] --> roughly(fᵢ)
+        @fact kernel.collision.args[2] --> roughly(feq)
 
-        @fact length(kernel.streamers[42].args) => 1
-        @fact length(kernel.streamers[9].args) => 1
-        @fact length(kernel.streamers[0].args) => size(sim.populations, 1) - 2
+        @fact length(kernel.streamers[42].args) --> 1
+        @fact length(kernel.streamers[9].args) --> 1
+        @fact length(kernel.streamers[0].args) --> size(sim.populations, 1) - 2
 
-        @fact kernel.streamers[42].args[1][2] => exactly(sim)
-        @fact kernel.streamers[42].args[1][1].feq => roughly(feq)
-        @fact kernel.streamers[42].args[1][3:end] => (start, finish, direction)
+        @fact kernel.streamers[42].args[1][2] --> exactly(sim)
+        @fact kernel.streamers[42].args[1][1].feq --> roughly(feq)
+        @fact kernel.streamers[42].args[1][3:end] --> (start, finish, direction)
 
-        @fact kernel.streamers[9].args[1][2] => exactly(sim)
+        @fact kernel.streamers[9].args[1][2] --> exactly(sim)
         zerodir = findfirst([all(cᵢ[:, i] .== 0) for i in 1:size(cᵢ, 2)])
-        @fact kernel.streamers[9].args[1][3:end] => (start, start, zerodir)
+        @fact kernel.streamers[9].args[1][3:end] --> (start, start, zerodir)
     end
 
     context("Loop over all sites") do
         sim.playground[:] = 1
         sim.playground[5] = 2
-        sim.kernels = {1 => MockKernel(0), 2 => MockKernel(1)}
+        sim.kernels = Dict(1 => MockKernel(0), 2 => MockKernel(1))
 
         sim.populations[:] = -1
         local_kernel(sim)
 
-        @fact any(sim.populations == -1) => false
-        @fact sim.populations[:, 5] => roughly(ones(sim.populations[:, 1]))
+        @fact any(sim.populations == -1) --> false
+        @fact sim.populations[:, 5] --> roughly(ones(sim.populations[:, 1]))
     end
 end

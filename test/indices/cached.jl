@@ -10,17 +10,17 @@ facts("Checking caching") do
         cartesian = LatBo.Indices.Cartesian([5, 4])
         cached = LatBo.Indices.Cached(cartesian, lattice)
 
-        @fact size(cached.cache) => (length(lattice), length(cartesian))
-        @fact typeof(cached.indexing) => typeof(cartesian)
-        @fact size(cached) => size(cartesian)
-        @fact length(cached) => length(cartesian)
+        @fact size(cached.cache) --> (length(lattice), length(cartesian))
+        @fact typeof(cached.indexing) --> typeof(cartesian)
+        @fact size(cached) --> size(cartesian)
+        @fact length(cached) --> length(cartesian)
         for i = 1:length(cartesian), d = 1:length(lattice)
             const coords = gridcoords(cartesian, i)
             if all(coords .> 1) && all(coords .< size(cartesian))
                 const expected = neighbor_index(cartesian, i, lattice, d)
-                @fact neighbor_index(cached, i, lattice, d) => expected
+                @fact neighbor_index(cached, i, lattice, d) --> expected
             else
-                @fact neighbor_index(cached, i, lattice, d) => 0
+                @fact neighbor_index(cached, i, lattice, d) --> 0
             end
         end
     end
@@ -28,12 +28,12 @@ facts("Checking caching") do
     context("Cached Periodic") do
         periodic = LatBo.Indices.Periodic([5, 4])
         cached = LatBo.Indices.Cached(periodic, lattice)
-        @fact size(cached.cache) => (length(lattice), length(periodic))
-        @fact typeof(cached.indexing) => typeof(periodic)
-        @fact size(cached) => size(periodic)
-        @fact length(cached) => length(periodic)
+        @fact size(cached.cache) --> (length(lattice), length(periodic))
+        @fact typeof(cached.indexing) --> typeof(periodic)
+        @fact size(cached) --> size(periodic)
+        @fact length(cached) --> length(periodic)
         for i = 1:length(periodic), d = 1:length(lattice)
-            @fact neighbor_index(cached, i, lattice, d) => neighbor_index(periodic, i, lattice, d)
+            @fact neighbor_index(cached, i, lattice, d) --> neighbor_index(periodic, i, lattice, d)
         end
     end
 end

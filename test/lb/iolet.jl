@@ -29,22 +29,22 @@ facts("Inlets and Outlets") do
 
             sim.populations[:] = 0
             sim.next_populations[:] = 0
-            @fact sim.lattice.inversion[direction] => invdir
+            @fact sim.lattice.inversion[direction] --> invdir
             sim.populations[direction, start] = 1
-            @fact sim.next_populations .== 0 => all
+            @fact sim.next_populations .== 0 --> all
 
             # perform streaming
             iolet = MockVelocityIOlet()
             streaming(iolet, sim, start, direction)
 
-            @fact iolet.position => roughly(Float64[2.5, 3.5])
-            @fact iolet.time => roughly(sim.time)
+            @fact iolet.position --> roughly(Float64[2.5, 3.5])
+            @fact iolet.time --> roughly(sim.time)
             # 20 is the celerity * momentum
             expected = 2sim.lattice.weights[direction] / speed_of_sound_squared * 20
-            @fact sim.next_populations[invdir, start] => roughly(1 - expected)
-            @fact sum(abs(sim.next_populations)) => roughly(abs(1 - expected))
-            @fact sim.populations[direction, start] => roughly(1)
-            @fact sum(abs(sim.populations)) => roughly(1)
+            @fact sim.next_populations[invdir, start] --> roughly(1 - expected)
+            @fact sum(abs(sim.next_populations)) --> roughly(abs(1 - expected))
+            @fact sim.populations[direction, start] --> roughly(1)
+            @fact sum(abs(sim.populations)) --> roughly(1)
         end
 
         context("parabolic") do
@@ -53,22 +53,22 @@ facts("Inlets and Outlets") do
             iolet = ParabolicVelocityIOlet{Float64}(n₀, Γ, r, ν_max)
 
             # should be zero at radius
-            @fact velocity(iolet, Γ + r * n₁ + rand() * n₀) => roughly(zeros(Float64, 2))
+            @fact velocity(iolet, Γ + r * n₁ + rand() * n₀) --> roughly(zeros(Float64, 2))
             # should be ν_max at origin
-            @fact velocity(iolet, Γ) => roughly(ν_max * n₀)
+            @fact velocity(iolet, Γ) --> roughly(ν_max * n₀)
             # should be 0.75 * ν_max at origin + 1/2 radius
-            @fact velocity(iolet, Γ + 0.5r*n₁) => roughly(0.75ν_max * n₀)
+            @fact velocity(iolet, Γ + 0.5r*n₁) --> roughly(0.75ν_max * n₀)
 
             # velocity should be along normal
-            @fact dot(velocity(iolet, Γ + 2r*rand(Float64, 2)), n₁) => roughly(0)
+            @fact dot(velocity(iolet, Γ + 2r*rand(Float64, 2)), n₁) --> roughly(0)
             # velocity should not depend on position along normal
             α = Γ + 2r*rand(Float64, 2)
-            @fact velocity(iolet, α + r * rand() * n₀) => roughly(velocity(iolet, α))
+            @fact velocity(iolet, α + r * rand() * n₀) --> roughly(velocity(iolet, α))
 
             # velocity should be maximum at origin and equal to maxspeed
             α = Γ + 2r*rand() * n₀
             δν = velocity(iolet, α + ϵ * n₁) - velocity(iolet, α - ϵ * n₁)
-            @fact dot(δν, n₀) => roughly(0)
+            @fact dot(δν, n₀) --> roughly(0)
         end
     end
 
@@ -87,14 +87,14 @@ facts("Inlets and Outlets") do
         feq = equilibrium(ρ, μ, sim.lattice.celerities, sim.lattice.weights)
 
         streaming(iolet, ν₀, sim, start, direction)
-        @fact sim.next_populations[invdir, start] => roughly(feq[invdir])
-        @fact sum(abs(sim.next_populations[invdir, start])) => roughly(feq[invdir])
+        @fact sim.next_populations[invdir, start] --> roughly(feq[invdir])
+        @fact sum(abs(sim.next_populations[invdir, start])) --> roughly(feq[invdir])
 
         # original population has no effect
         sim.populations = 1.0 + rand(Float64, size(sim.populations))
         streaming(iolet, ν₀, sim, start, direction)
-        @fact sim.next_populations[invdir, start] => roughly(feq[invdir])
-        @fact sum(abs(sim.next_populations[invdir, start])) => roughly(feq[invdir])
+        @fact sim.next_populations[invdir, start] --> roughly(feq[invdir])
+        @fact sum(abs(sim.next_populations[invdir, start])) --> roughly(feq[invdir])
     end
 end
 

@@ -45,4 +45,6 @@ end
 length(kernel::Cached) = length(kernel.indexing)
 size(kernel::Cached) = size(kernel.indexing)
 gridcoords(kernel::Cached, index::Integer) = gridcoords(kernel.indexing, index)
-index(kernel::Cached, indices::(Integer...)) = index(kernel.indexing, indices)
+function index{I <: Integer}(kernel::Cached, indices::Vararg{I})
+    index(kernel.indexing, indices)
+end

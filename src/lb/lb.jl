@@ -67,7 +67,7 @@ function local_kernel(
 end
 
 
-type Homogeneous{T <: FloatingPoint} <: Initializer
+type Homogeneous{T <: AbstractFloat} <: Initializer
     density::T
     momentum::DenseVector{T}
 end

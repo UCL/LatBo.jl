@@ -41,7 +41,7 @@ function velocity(iolet::ParabolicVelocityIOlet, position)
     ((1 - radial) * iolet.maxspeed) * iolet.normal
 end
 
-type ConstantVelocityIOlet{T <: FloatingPoint} <: VelocityIOlet
+type ConstantVelocityIOlet{T <: AbstractFloat} <: VelocityIOlet
     velocity :: Vector{T}
 end
 streaming(

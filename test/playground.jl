@@ -21,15 +21,15 @@ facts("Constructing playground with a single pipe") do
         end
 
         # Check we got what we asked for
-        @fact playpen .!= NOTHING => all
+        @fact playpen .!= NOTHING --> all
         for indices in ([3, 20], [20, 5], [38, 35])
-            @fact playpen[indices...] => FLUID
+            @fact playpen[indices...] --> FLUID
         end
         for indices in ([2, 20], [39, 35], [2, 1], [2, 40])
-            @fact playpen[indices...] => SOLID
+            @fact playpen[indices...] --> SOLID
         end
-        @fact playpen[3:end-3, 1] .== INLET => all
-        @fact playpen[3:end-3, 40] .== OUTLET => all
+        @fact playpen[3:end-3, 1] .== INLET --> all
+        @fact playpen[3:end-3, 40] .== OUTLET --> all
     end
 
     context("3d") do
@@ -48,16 +48,16 @@ facts("Constructing playground with a single pipe") do
         end
 
         # Check we got what we asked for
-        @fact playpen .!= NOTHING => all
+        @fact playpen .!= NOTHING --> all
         in_sphere(i, j) =  (i - 5.5)^2 + (j - 5.5)^2 <= 16
         for i = 1:size(playpen, 1), j = 1:size(playpen, 2)
-            @fact playpen[i, j, 10] => in_sphere(i, j) ? FLUID: SOLID
+            @fact playpen[i, j, 10] --> (in_sphere(i, j) ? FLUID: SOLID)
         end
         for i = 1:size(playpen, 1), j = 1:size(playpen, 2)
-            @fact playpen[i, j, 1] => in_sphere(i, j) ? INLET: SOLID
+            @fact playpen[i, j, 1] --> (in_sphere(i, j) ? INLET: SOLID)
         end
         for i = 1:size(playpen, 1), j = 1:size(playpen, 2)
-            @fact playpen[i, j, 20] => in_sphere(i, j) ? OUTLET: SOLID
+            @fact playpen[i, j, 20] --> (in_sphere(i, j) ? OUTLET: SOLID)
         end
     end
 end

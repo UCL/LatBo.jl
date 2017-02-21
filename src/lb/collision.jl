@@ -1,4 +1,4 @@
-type SingleRelaxationTime{T <: FloatingPoint} <: Collision
+type SingleRelaxationTime{T <: AbstractFloat} <: Collision
     # Inverse of the relaxation time
     τ⁻¹::T
 end

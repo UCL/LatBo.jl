@@ -14,17 +14,19 @@ include("periodic.jl")
 length(d::Indexing) = prod(d.dimensions)
 size(d::Indexing) = d.dimensions
 function size(d::Indexing, i::Integer)
-    @assert i >= 1 and i =< length(d.dimensions)
+    @assert i ≥ 1 && i ≤ length(d.dimensions)
     d.dimensions[i]
 end
 
-index(kernel::Indexing, indices::(Integer...)) = index(kernel::Indexing, collect(indices))
+function index{N, I <: Integer}(kernel::Indexing, indices::NTuple{N, I})
+    index(kernel::Indexing, collect(indices))
+end
 
 function gridcoords(kernel::Indexing, index::Integer)
     result = ones(typeof(index), length(kernel.dimensions))
     index -= 1
     for i in length(kernel.dimensions):-1:1
-       result[i] += ifloor(index // kernel.strides[i])
+       result[i] += floor(typeof(index), index // kernel.strides[i])
        index %= kernel.strides[i]
     end
     result

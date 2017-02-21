@@ -5,7 +5,7 @@ export velocity, momentum, density
 
 
 # Type defining the feature of the simulation playground
-abstract Simulation{T <: FloatingPoint, I <: Int}
+abstract Simulation{T <: AbstractFloat, I <: Int}
 abstract AbstractLattice
 
 include("indices/indices.jl")

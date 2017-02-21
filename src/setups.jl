@@ -8,8 +8,8 @@ using .Units: dimensionless, LBUnits
 #  - length -> m
 #  - pressure -> Pa
 #  - viscosity -> Pa * s
-function lbgk(
-        lattice::Lattice, dimensions::(Integer...),
+function lbgk{N, I <: Integer}(
+        lattice::Lattice, dimensions::NTuple{N, I},
         δt::Number,                       # s
         δx::Number;                       # m
         viscosity::Number=1e-3,           # Pa*s
@@ -34,13 +34,15 @@ function lbgk(
     # Set up main item
     result = SandBox(lattice, dimensions; ρ₀=density(p₀ - 0.5Δp), μ₀=μ, kwargs...)
     # Set up kernel and streamers with some default values
-    streamers = {
+    streamers = Dict{Playground.Feature, LB.Streaming}(
         Playground.INLET  => NashZeroOrderPressure{T}(T[0, 1], density(p₀)),
         Playground.OUTLET => NashZeroOrderPressure{T}(T[0, 1], convert(T, density(p₀ - Δp))),
         Playground.FLUID  => FluidStreaming(),
         Playground.SOLID  => HalfWayBounceBack()
-    }
-    result.kernels = {Playground.FLUID => FluidKernel(SingleRelaxationTime{T}(1.0/τ), streamers)}
+    )
+    result.kernels = Dict(
+        Playground.FLUID =>
+            FluidKernel(SingleRelaxationTime{T}(1.0/τ), streamers))
 
     # Set up playground as box with inflow on left, outflow on right
     if length(dimensions) == 2
@@ -71,6 +73,7 @@ function lbgk(
     result
 end
 
-function lbgk(lattice::Symbol, dimensions::(Integer...), δt::Number, δx::Number; kwargs...)
+function lbgk{N, I <: Integer}(lattice::Symbol, dimensions::NTuple{N, I},
+                               δt::Number, δx::Number; kwargs...)
     lbgk(getfield(LB, lattice)::LB.Lattice, dimensions, δt, δx; kwargs...)
 end

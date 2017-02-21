@@ -1,9 +1,9 @@
 # Defines streaming types and operators
 abstract WallStreaming <: Streaming
 abstract IOLetStreaming <: Streaming
-immutable type FluidStreaming <: Streaming; end
-immutable type NullStreaming <: Streaming; end
-immutable type HalfWayBounceBack <: Streaming; end
+immutable FluidStreaming <: Streaming; end
+immutable NullStreaming <: Streaming; end
+immutable HalfWayBounceBack <: Streaming; end
 const NULLSTREAMER = NullStreaming()
 
 # Do nothing when streaming to null, by default

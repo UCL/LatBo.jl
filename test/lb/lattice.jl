@@ -8,10 +8,10 @@ facts("Lattice direction inversion") do
             lattice = eval(lattice_name)
             ncomponents = size(lattice.celerities, 2)
 
-            @fact lattice.inversion .>= 1 => all
-            @fact lattice.inversion .<= ncomponents => all
-            @fact length(unique(lattice.inversion)) => ncomponents
-            @fact lattice.celerities[:, lattice.inversion] => -lattice.celerities
+            @fact lattice.inversion .>= 1 --> all
+            @fact lattice.inversion .<= ncomponents --> all
+            @fact length(unique(lattice.inversion)) --> ncomponents
+            @fact lattice.celerities[:, lattice.inversion] --> -lattice.celerities
         end
     end
 end
@@ -26,8 +26,8 @@ facts("Compute neighbor index from sim/lattice object") do
     for from = ([2, 3], [5, 6]), direction = 1:size(sim.lattice.celerities, 2)
         site = index(sim.indexing, from)
         to = neighbor_index(sim, site, direction)
-        @fact gridcoords(sim.indexing, to) - from => sim.lattice.celerities[:, direction]
+        @fact gridcoords(sim.indexing, to) - from --> sim.lattice.celerities[:, direction]
     end
-    @fact_throws ErrorException neighbor_index(sim, 0, 1)
-    @fact_throws ErrorException neighbor_index(sim, length(sim.indexing) + 1, 1)
+    @fact_throws AssertionError neighbor_index(sim, 0, 1)
+    @fact_throws AssertionError neighbor_index(sim, length(sim.indexing) + 1, 1)
 end
