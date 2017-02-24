@@ -15,7 +15,7 @@ function plot(what::Symbol, sim::SandBox, args...; kwargs...)
     only_fluid = filter(is_fluid, collect(1:length(sim.playground)))
     nofluid = filter(i -> !is_fluid(i), collect(1:length(sim.playground)))
 
-    const populations  = {parse("f_$i") => i for i in 1:9}
+    const populations  = Dict(parse("f_$i") => i for i in 1:9)
 
     title = Guide.title(string(what))
     if what == :playground
@@ -41,7 +41,7 @@ function plot(what::Symbol, sim::SandBox, args...; kwargs...)
     else
         lines = reshape(plotthis[only_fluid], Npoints[1]-2, Npoints[2]-2)
         plot(
-        layer(x=x[nofluid], y=y[nofluid], Theme(default_color=color("black")), Geom.point),
+        layer(x=x[nofluid], y=y[nofluid], Theme(default_color=colorant"black"), Geom.point),
             layer(x=x[only_fluid], y=y[only_fluid], color=plotthis[only_fluid], Geom.point),
             layer(
                 x=collect(2:(size(lines, 1)+1)), 
